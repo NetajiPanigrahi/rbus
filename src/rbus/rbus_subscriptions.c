@@ -424,7 +424,7 @@ static bool rbusSubscriptions_isListenerRunning(char const* listener)
 
 static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
 {
-    struct stat st;
+    struct stat st, st1;
     long size;
     uint16_t type, length;
     int32_t hasFilter;
@@ -570,6 +570,16 @@ static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
             snprintf(filename, RTMSG_HEADER_MAX_TOPIC_LENGTH-1, "%s%d_%d", "/tmp/.rbus/",
                     rbusSubscriptions_getListenerPid(sub->listener), sub->componentId);
             RBUSLOG_INFO("sub file name %s", filename);
+            if(stat(filename, &st1) != 0)
+            {
+                subscriptionFree(sub);
+                needSave = true;
+                RBUSLOG_INFO("file doesn't exist %s", filename);
+                continue;
+            }
+            int result = access(filename, F_OK);
+            RBUSLOG_INFO("file %s access return with %d", filename, result);
+#if 0
             if(access(filename, F_OK) != 0)
             {
                 subscriptionFree(sub);
@@ -577,6 +587,7 @@ static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
                 RBUSLOG_INFO("file doesn't exist %s", filename);
                 continue;                
             }
+#endif            
         }
 
         rtList_Create(&sub->instances);
