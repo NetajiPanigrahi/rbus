@@ -570,6 +570,21 @@ static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
             snprintf(filename, RTMSG_HEADER_MAX_TOPIC_LENGTH-1, "%s%d_%d", "/tmp/.rbus/",
                     rbusSubscriptions_getListenerPid(sub->listener), sub->componentId);
             RBUSLOG_INFO("sub file name %s", filename);
+            FILE* sub_file = NULL;
+            sub_file = fopen(filename, "r");
+            if(sub_file == NULL)
+            {
+                RBUSLOG_ERROR("file doesn't exist %s", filename);
+                subscriptionFree(sub);
+                needSave = true;
+                continue;
+            }
+            else
+            {
+                RBUSLOG_INFO("file exist %s", filename);
+                fclose(sub_file);
+            }
+#if 0
             if(stat(filename, &st1) != 0)
             {
                 subscriptionFree(sub);
@@ -577,7 +592,8 @@ static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
                 RBUSLOG_INFO("file doesn't exist %s", filename);
                 continue;
             }
-            int result = access(filename, F_OK);
+#endif
+            int result = access(filename, R_OK);
             RBUSLOG_INFO("file %s access return with %d", filename, result);
 #if 0
             if(access(filename, F_OK) != 0)
