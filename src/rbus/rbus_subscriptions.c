@@ -424,7 +424,8 @@ static bool rbusSubscriptions_isListenerRunning(char const* listener)
 
 static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
 {
-    struct stat st, st1;
+    struct stat st;
+    //struct stat st1;
     long size;
     uint16_t type, length;
     int32_t hasFilter;
