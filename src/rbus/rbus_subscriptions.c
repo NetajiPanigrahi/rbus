@@ -595,7 +595,10 @@ static void rbusSubscriptions_loadCache(rbusSubscriptions_t subscriptions)
             }
 #endif
             int result = access(filename, R_OK);
-            RBUSLOG_INFO("file %s access return with %d", filename, result);
+            RBUSLOG_INFO("file %s access R_OK return with %d", filename, result);
+
+            result = access(filename, F_OK);
+            RBUSLOG_INFO("file %s access F_OK return with %d", filename, result);
 #if 0
             if(access(filename, F_OK) != 0)
             {
