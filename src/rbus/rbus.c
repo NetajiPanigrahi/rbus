@@ -3871,9 +3871,10 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                             int startIndex = runningCount;
                             int count = 0;
                             int i;
-
+                            int result;
+                            rbusMessage_GetInt32(response, &result);
                             rbusMessage_GetInt32(response, &count);
-                            if(count > 0)
+                            if(result == RBUS_ERROR_SUCCESS && count > 0)
                             {
                                 runningCount += count;
                                 if(*elemAttributesInfo == NULL)
