@@ -1680,6 +1680,84 @@ void validate_and_execute_getnames_cmd (int argc, char *argv[])
     }
 }
 
+void validate_and_execute_getattributes_cmd (int argc, char *argv[])
+{
+    rbusElementAttributesInfo_t* elemAttributesInfo= NULL;
+    int numOfInputParams = argc - 2;
+    const char *pInputParam[RBUS_CLI_MAX_PARAM] = {0, 0};
+    rbusError_t rc;
+    int index = 1;
+    int i = 0;
+    if (argc < 3)
+    {
+        printf ("Invalid arguments. Please see the help\n\r");
+        return;
+    }
+
+    if (!verify_rbus_open())
+        return;
+
+    runSteps = __LINE__;
+
+    for (index = 0, i = 2; index < numOfInputParams; index++, i++)
+        pInputParam[index] = argv[i];
+
+    rc = rbus_getParameterAttributesExt(g_busHandle, numOfInputParams, pInputParam, &elemAttributesInfo);
+
+    if(RBUS_ERROR_SUCCESS == rc)
+    {
+        if(elemAttributesInfo)
+        {
+            rbusElementAttributesInfo_t* elem;
+            char const* component;
+
+            elem = elemAttributesInfo;
+            component = NULL;
+            index = 1;
+
+            while(elem)
+            {
+                char * pTmp = NULL;
+                if(component == NULL || strcmp(component, elem->component) != 0)
+                {
+                    printf("\n\rComponent %s:\n\r", elem->component);
+                    component = elem->component;
+                    index = 1;
+                }
+                printf ("Element   %2d:\n\r", index++);
+                printf ("              Name  : %s\n\r", elem->name);
+                    if ( elem->accessControlBitmask == 0x0 )
+                        pTmp = "acs";
+                    else if ( elem->accessControlBitmask == 0x1 )
+                        pTmp = "xmpp";
+                    else if (elem->accessControlBitmask == 0x2 )
+                        pTmp = "cli";
+                    else if ( elem->accessControlBitmask == 0x4 )
+                        pTmp = "webgui";
+                    else if ( elem->accessControlBitmask == 0xFFFFFFFF )
+                        pTmp = "anybody";
+                    printf("\tnotification:%s, accessControlChanged:%s.\n",
+                            elem->notification?"on":"off",
+                            pTmp
+                          );
+                elem = elem->next;
+            }
+
+            rbusElementAttributesInfo_free(g_busHandle, elemAttributesInfo);
+        }
+        else
+        {
+            printf ("No results returned for %s\n\r",argv[2]);
+        }
+    }
+    else
+    {
+        printf ("Failed to get the data. Error : %d\n\r",rc);
+    }
+}
+
+
+
 void validate_and_execute_getrownames_cmd (int argc, char *argv[])
 {
     rbusError_t rc = RBUS_ERROR_SUCCESS;
@@ -2342,7 +2420,11 @@ int handle_cmds (int argc, char *argv[])
     else if(matchCmd(command, 4, "getnames"))
     {
         validate_and_execute_getnames_cmd (argc, argv);
-    } 
+    }
+    else if(matchCmd(command, 4, "getattributes"))
+    {
+        validate_and_execute_getattributes_cmd (argc, argv);
+    }
     else if(matchCmd(command, 4, "getrows") || matchCmd(command, 4, "getrownames"))
     {
         validate_and_execute_getrownames_cmd (argc, argv);

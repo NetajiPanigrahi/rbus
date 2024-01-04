@@ -652,6 +652,18 @@ typedef struct _rbusElementInfo
     struct _rbusElementInfo* next;  /** The next name in this list */    
 } rbusElementInfo_t;
 
+typedef struct _rbusElementAttributesInfo
+{
+    char const* name;               /** Fully qualified element name */
+    char const* component;          /** Name of the component providing this element */
+    int32_t notificationChanged;    
+	int32_t notification;
+	int32_t accessControlChanged;
+	int32_t access;
+	uint32_t accessControlBitmask;
+    struct _rbusElementAttributesInfo* next;  /** The next name in this list */    
+} rbusElementAttributesInfo_t;
+
 /** @} */
 /** @} */
 
@@ -959,6 +971,12 @@ rbusError_t rbus_getExt(
  *  Possible values are:
  *  RBUS_ERROR_ACCESS_NOT_ALLOWED: Access to the requested parameter is not permitted
  */
+rbusError_t rbus_getParameterAttributesExt(
+        rbusHandle_t handle,
+        int paramCount,
+        char const** pParamNames,
+        rbusElementAttributesInfo_t** elemAttributesInfo);
+
 rbusError_t rbus_getBoolean(
     rbusHandle_t handle,
     char const* paramName,
@@ -1277,6 +1295,10 @@ rbusError_t rbusElementInfo_get(
 rbusError_t rbusElementInfo_free(
     rbusHandle_t handle, 
     rbusElementInfo_t* elemInfo);
+
+rbusError_t rbusElementAttributesInfo_free(
+       rbusHandle_t handle,
+       rbusElementAttributesInfo_t* elemInfo);
 
 /** @} */
 

@@ -3665,6 +3665,269 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
     return errorcode;
 }
 
+rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
+        char const** pParamNames,
+        rbusElementAttributesInfo_t** elemAttributesInfo)
+{
+    rbusError_t errorcode = RBUS_ERROR_SUCCESS;
+    rbusCoreError_t err = RBUSCORE_SUCCESS;
+    int i, j;
+    struct _rbusHandle* handleInfo = (struct _rbusHandle*) handle;
+
+    VERIFY_NULL(handleInfo);
+    VERIFY_NULL(pParamNames);
+    VERIFY_ZERO(paramCount);
+    int runningCount = 0;
+
+    if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
+        return RBUS_ERROR_INVALID_HANDLE;
+
+    if ((1 == paramCount) && (_is_wildcard_query(pParamNames[0])))
+    {
+        int numDestinations = 0;
+        char** destinations;
+        err = rbus_discoverWildcardDestinations(pParamNames[0], &numDestinations, &destinations);
+        if (RBUSCORE_SUCCESS == err)
+        {
+            RBUSLOG_DEBUG("Query for expression %s was successful. See result below:", pParamNames[0]);
+            if (0 == numDestinations)
+            {
+                RBUSLOG_DEBUG("It is possibly a table entry from single component.");
+            }
+            else
+            {
+                for(i = 0; i < numDestinations; i++)
+                {
+                    rbusMessage request, response;
+                    RBUSLOG_DEBUG("Destination %d is %s", i, destinations[i]);
+
+                    /* Get the query sent to each component identified */
+                    rbusMessage_Init(&request);
+                    rbusMessage_SetInt32(request,1);
+                    rbusMessage_SetString(request, pParamNames[0]);
+                    /* Invoke the method */
+                    err = rbus_invokeRemoteMethod(destinations[i], METHOD_GETPARAMETERATTRIBUTES,
+                            request, rbusConfig_ReadGetTimeout(), &response);
+
+                    if(err != RBUSCORE_SUCCESS)
+                    {
+                        RBUSLOG_ERROR("get by %s failed; Received error %d from RBUS Daemon for the object %s",
+                                handle->componentName, err, destinations[i]);
+                        errorcode = rbusCoreError_to_rbusError(err);
+                    }
+                    else
+                    {
+                        int providerErr = 0;
+                        rbusMessage_GetInt32(response, &providerErr);
+                        errorcode = providerErr < (int)RBUS_LEGACY_ERR_SUCCESS ?
+                            (rbusError_t)providerErr :CCSPError_to_rbusError((rbusLegacyReturn_t)providerErr);
+                        if(errorcode == RBUS_ERROR_SUCCESS)
+                        {
+                            int startIndex = runningCount;
+                            int count = 0;
+                            int i;
+
+                            rbusMessage_GetInt32(response, &count);
+                            if(count > 0)
+                            {
+                                runningCount += count;
+                                if(*elemAttributesInfo == NULL)
+                                    *elemAttributesInfo = rt_try_malloc(runningCount * sizeof(rbusElementAttributesInfo_t));
+                                else
+                                    *elemAttributesInfo = rt_try_realloc(*elemAttributesInfo, runningCount * sizeof(rbusElementAttributesInfo_t));
+                                if(!*elemAttributesInfo)
+                                {
+                                    RBUSLOG_ERROR("failed to malloc %d element infos", runningCount);
+                                    return RBUS_ERROR_OUT_OF_RESOURCES;
+                                }
+                                for(i = 0; i < runningCount-1; ++i)
+                                    (*elemAttributesInfo)[i].next = &(*elemAttributesInfo)[i+1];
+                                (*elemAttributesInfo)[runningCount-1].next = NULL;
+                            }
+
+                            for(j = startIndex; j < runningCount; ++j)
+                            {
+                                rbusMessage_GetString(response, (char const**)&(*elemAttributesInfo)[j].name);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[j].notificationChanged);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[j].notification);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[j].accessControlChanged);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[j].access);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[j].accessControlBitmask);
+                                (*elemAttributesInfo)[j].name = strdup((*elemAttributesInfo)[j].name);
+                                (*elemAttributesInfo)[j].component = strdup(destinations[i]);
+                                RBUSLOG_DEBUG("adding name %s", (*elemAttributesInfo)[j].name);
+                            }
+                        }
+                        else
+                        {
+                            char const* providerErrMsg = NULL;
+                            rbusMessage_GetString(response, &providerErrMsg);
+                        }
+                        rbusMessage_Release(response);
+                    }
+                }
+
+                for(i = 0; i < numDestinations; i++)
+                    free(destinations[i]);
+                free(destinations);
+
+                return errorcode;
+            }
+        }
+        else
+        {
+            RBUSLOG_DEBUG("Query for expression %s was not successful.", pParamNames[0]);
+            return RBUS_ERROR_ELEMENT_DOES_NOT_EXIST;
+        }
+    }
+
+    {
+        rbusMessage request, response;
+        int numComponents;
+        char** componentNames = NULL;
+
+        /*discover which components have some ownership of the params in the list*/
+        errorcode = rbus_discoverComponentName(handle, paramCount, pParamNames, &numComponents, &componentNames);
+        if(errorcode == RBUS_ERROR_SUCCESS && paramCount == numComponents)
+        {
+            for(i = 0; i < paramCount; ++i)
+            {
+                if(!componentNames[i] || !componentNames[i][0])
+                {
+                    RBUSLOG_ERROR("Cannot find component for %s", pParamNames[i]);
+                    errorcode = RBUS_ERROR_INVALID_INPUT;
+                }
+            }
+
+            if(errorcode == RBUS_ERROR_INVALID_INPUT)
+            {
+                free(componentNames);
+                return RBUS_ERROR_INVALID_INPUT;
+            }
+            /*batch by component*/
+            for(;;)
+            {
+                char* componentName = NULL;
+                char const* firstParamName = NULL;
+                int batchCount = 0;
+
+                for(i = 0; i < paramCount; ++i)
+                {
+                    if(componentNames[i])
+                    {
+                        if(!componentName)
+                        {
+                            RBUSLOG_DEBUG("starting batch for component %s", componentNames[i]);
+                            componentName = strdup(componentNames[i]);
+                            firstParamName = pParamNames[i];
+                            batchCount = 1;
+                        }
+                        else if(strcmp(componentName, componentNames[i]) == 0)
+                        {
+                            batchCount++;
+                        }
+                    }
+                }
+
+                if(componentName)
+                {
+                    rbusMessage_Init(&request);
+                    rbusMessage_SetInt32(request, batchCount);
+
+                    RBUSLOG_DEBUG("batchCount %d", batchCount);
+
+                    for(i = 0; i < paramCount; ++i)
+                    {
+                        if(componentNames[i] && strcmp(componentName, componentNames[i]) == 0)
+                        {
+                            RBUSLOG_DEBUG("adding %s to batch", pParamNames[i]);
+                            rbusMessage_SetString(request, pParamNames[i]);
+
+                            /*free here so its removed from batch scan*/
+                            free(componentNames[i]);
+                            componentNames[i] = NULL;
+                        }
+                    }                  
+
+                    RBUSLOG_DEBUG("sending batch request with %d params to component %s", batchCount, componentName);
+                    free(componentName);
+
+                    if((err = rbus_invokeRemoteMethod(firstParamName,
+                                    METHOD_GETPARAMETERATTRIBUTES,
+                                    request,
+                                    rbusConfig_ReadGetTimeout(),
+                                    &response)) != RBUSCORE_SUCCESS)
+                    {
+                        RBUSLOG_ERROR("get by %s failed; Received error %d from RBUS Daemon for the object %s",
+                                handle->componentName, err, firstParamName);
+                        errorcode = rbusCoreError_to_rbusError(err);
+                        break;
+                    }
+                    else
+                    {
+                        errorcode = rbusCoreError_to_rbusError(err);
+                        if(errorcode == RBUS_ERROR_SUCCESS)
+                        {
+                            int startIndex = runningCount;
+                            int count = 0;
+                            int i;
+
+                            rbusMessage_GetInt32(response, &count);
+                            if(count > 0)
+                            {
+                                runningCount += count;
+                                if(*elemAttributesInfo == NULL)
+                                    *elemAttributesInfo = rt_try_malloc(runningCount * sizeof(rbusElementAttributesInfo_t));
+                                else
+                                    *elemAttributesInfo = rt_try_realloc(*elemAttributesInfo, runningCount * sizeof(rbusElementAttributesInfo_t));
+                                if(!*elemAttributesInfo)
+                                {
+                                    RBUSLOG_ERROR("failed to malloc %d element infos", runningCount);
+                                    return RBUS_ERROR_OUT_OF_RESOURCES;
+                                }
+                                for(i = 0; i < runningCount-1; ++i)
+                                    (*elemAttributesInfo)[i].next = &(*elemAttributesInfo)[i+1];
+                                (*elemAttributesInfo)[runningCount-1].next = NULL;
+                            }
+
+                            for(i = startIndex; i < runningCount; ++i)
+                            {
+                                rbusMessage_GetString(response, (char const**)&(*elemAttributesInfo)[i].name);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].notificationChanged);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].notification);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].accessControlChanged);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].access);
+                                rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].accessControlBitmask);
+                                (*elemAttributesInfo)[i].name = strdup((*elemAttributesInfo)[i].name);
+                                (*elemAttributesInfo)[i].component = strdup(componentNames[i]);
+                                RBUSLOG_DEBUG("adding name %s", (*elemAttributesInfo)[i].name);
+                            }
+                        }
+                        else
+                        {
+                            char const* providerErrMsg = NULL;
+                            rbusMessage_GetString(response, &providerErrMsg);
+                        }
+                        rbusMessage_Release(response);
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+        }
+        else
+        {
+            errorcode = RBUS_ERROR_DESTINATION_NOT_REACHABLE;
+            RBUSLOG_ERROR("Discover component names failed with error %d and counts %d/%d", errorcode, paramCount, numComponents);
+        }
+        if(componentNames)
+            free(componentNames);
+    }
+    return errorcode;
+}
+
 static rbusError_t rbus_getByType(rbusHandle_t handle, char const* paramName, void* paramVal, rbusValueType_t type)
 {
     rbusError_t errorcode = RBUS_ERROR_INVALID_INPUT;
@@ -4531,6 +4794,28 @@ rbusError_t rbusElementInfo_free(
     }
     return RBUS_ERROR_SUCCESS;
 }
+
+rbusError_t rbusElementAttributesInfo_free(
+    rbusHandle_t handle, 
+    rbusElementAttributesInfo_t* elemInfo)
+{
+    VERIFY_NULL(handle);
+    if(elemInfo)
+    {
+        rbusElementAttributesInfo_t* elem = elemInfo;
+        while(elem)
+        {
+            if(elem->name)
+                free((char*)elem->name);
+            if(elem->component)
+                free((char*)elem->component);
+            elem = elem->next;
+        }
+        free(elemInfo);
+    }
+    return RBUS_ERROR_SUCCESS;
+}
+
 
 //************************** Events ****************************//
 
