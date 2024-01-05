@@ -1682,7 +1682,7 @@ void validate_and_execute_getnames_cmd (int argc, char *argv[])
 
 void validate_and_execute_getattributes_cmd (int argc, char *argv[])
 {
-    rbusElementAttributesInfo_t* elemAttributesInfo= NULL;
+    rbusElementAttributesInfo_t* elemAttributesInfo = NULL;
     int numOfInputParams = argc - 2;
     const char *pInputParam[RBUS_CLI_MAX_PARAM] = {0, 0};
     rbusError_t rc;
