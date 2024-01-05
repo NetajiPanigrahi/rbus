@@ -3911,8 +3911,10 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                                     rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].accessControlChanged);
                                     rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].access);
                                     rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].accessControlBitmask);
+                                    RBUSLOG_ERROR("=====> %s %d", __FUNCTION__, __LINE__);
                                     (*elemAttributesInfo)[i].name = strdup((*elemAttributesInfo)[i].name);
                                     (*elemAttributesInfo)[i].component = strdup(componentNames[i]);
+                                    RBUSLOG_ERROR("=====> %s %d", __FUNCTION__, __LINE__);
 
                                 }
                             }
@@ -3939,6 +3941,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
         if(componentNames)
             free(componentNames);
     }
+    RBUSLOG_ERROR("=====> %s %d", __FUNCTION__, __LINE__);
     return errorcode;
 }
 
