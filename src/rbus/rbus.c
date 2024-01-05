@@ -3869,6 +3869,12 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                     {
                         int providerErr = 0;
                         RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
+                                char* buff = NULL;
+                                uint32_t buff_length = 0;
+                                rbusMessage_ToDebugString(response, &buff, &buff_length);
+                                RBUSLOG_ERROR("MESSAGE: %s", buff);
+                                free(buff);
+
                         rbusMessage_GetInt32(response, &providerErr);
                         errorcode = providerErr < (int)RBUS_LEGACY_ERR_SUCCESS ?
                             (rbusError_t)providerErr :CCSPError_to_rbusError((rbusLegacyReturn_t)providerErr);
