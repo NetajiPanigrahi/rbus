@@ -3723,13 +3723,15 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                             (rbusError_t)providerErr :CCSPError_to_rbusError((rbusLegacyReturn_t)providerErr);
                         if(errorcode == RBUS_ERROR_SUCCESS)
                         {
+                            RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
                             int startIndex = runningCount;
                             int count = 0;
                             int i;
-
                             rbusMessage_GetInt32(response, &count);
+                            RBUSLOG_ERROR("%s %d count = %d", __FUNCTION__, __LINE__,count);
                             if(count > 0)
                             {
+                                RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
                                 runningCount += count;
                                 if(*elemAttributesInfo == NULL)
                                     *elemAttributesInfo = rt_try_malloc(runningCount * sizeof(rbusElementAttributesInfo_t));
@@ -3865,18 +3867,23 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                     }
                     else
                     {
+                        int providerErr = 0;
+                        RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
+                        rbusMessage_GetInt32(response, &providerErr);
+                        errorcode = providerErr < (int)RBUS_LEGACY_ERR_SUCCESS ?
+                            (rbusError_t)providerErr :CCSPError_to_rbusError((rbusLegacyReturn_t)providerErr);
                         errorcode = rbusCoreError_to_rbusError(err);
                         if(errorcode == RBUS_ERROR_SUCCESS)
                         {
                             int startIndex = runningCount;
                             int count = 0;
                             int i;
-                            int result;
-                            rbusMessage_GetInt32(response, &result);
                             rbusMessage_GetInt32(response, &count);
-                            if(result == RBUS_ERROR_SUCCESS && count > 0)
+
+                            if(count > 0)
                             {
                                 runningCount += count;
+                                RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
                                 if(*elemAttributesInfo == NULL)
                                     *elemAttributesInfo = rt_try_malloc(runningCount * sizeof(rbusElementAttributesInfo_t));
                                 else
@@ -3893,6 +3900,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
 
                             for(i = startIndex; i < runningCount; ++i)
                             {
+                                RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
                                 rbusMessage_GetString(response, (char const**)&(*elemAttributesInfo)[i].name);
                                 rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].notificationChanged);
                                 rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].notification);
