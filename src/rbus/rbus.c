@@ -3901,7 +3901,15 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                             for(i = startIndex; i < runningCount; ++i)
                             {
                                 RBUSLOG_ERROR("%s %d", __FUNCTION__, __LINE__);
+                                char* buff = NULL;
+                                uint32_t buff_length = 0;
+                                rbusMessage_ToDebugString(response, &buff, &buff_length);
+                                RBUSLOG_ERROR("MESSAGE: %s", buff);
+                                free(buff);
+
+#if 0
                                 rbusMessage_GetString(response, (char const**)&(*elemAttributesInfo)[i].name);
+                                RBUSLOG_ERROR("adding name %s", (*elemAttributesInfo)[i].name);
                                 rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].notificationChanged);
                                 rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].notification);
                                 rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].accessControlChanged);
@@ -3909,7 +3917,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
                                 rbusMessage_GetInt32(response, (int32_t*)&(*elemAttributesInfo)[i].accessControlBitmask);
                                 (*elemAttributesInfo)[i].name = strdup((*elemAttributesInfo)[i].name);
                                 (*elemAttributesInfo)[i].component = strdup(componentNames[i]);
-                                RBUSLOG_DEBUG("adding name %s", (*elemAttributesInfo)[i].name);
+#endif
                             }
                         }
                         else
