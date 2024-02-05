@@ -1408,7 +1408,7 @@ void validate_and_execute_set_cmd (int argc, char *argv[])
                 sessionId = 0;
             }
 
-            rbusSetOptions_t opts = {isCommit,sessionId};
+            rbusSetHandlerOptions_t opts = {isCommit,sessionId, NULL};
             rc = rbus_setMulti(g_busHandle, paramCnt, properties/*setNames, setVal*/, &opts);
         }
         else
@@ -1495,7 +1495,7 @@ void validate_and_execute_set_cmd (int argc, char *argv[])
             (void)sessionId;
 
             /* Assume a sessionId as it is going to be single entry thro this cli app; */
-            rbusSetOptions_t opts = {isCommit,sessionId};
+            rbusSetHandlerOptions_t opts = {isCommit,sessionId, NULL};
             rc = rbus_set(g_busHandle, argv[2], setVal, &opts);
 
             /* Free the data pointer that was allocated */

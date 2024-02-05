@@ -1043,7 +1043,7 @@ rbusError_t rbus_set(
     rbusHandle_t handle,
     char const* name,
     rbusValue_t value,
-    rbusSetOptions_t* opts);
+    rbusSetHandlerOptions_t* opts);
 
 /** @fn rbusError_t rbus_setMulti(
  *          rbusHandle_t handle,
@@ -1071,7 +1071,7 @@ rbusError_t rbus_setMulti(
     rbusHandle_t handle,
     int numProps,
     rbusProperty_t properties,
-    rbusSetOptions_t* opts);
+    rbusSetHandlerOptions_t* opts);
 
 
 /** @fn rbusError_t rbus_setBoolean(

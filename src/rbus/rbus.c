@@ -3730,7 +3730,7 @@ rbusError_t rbus_getStr (rbusHandle_t handle, char const* paramName, char** para
     return rbus_getByType(handle, paramName, paramVal, RBUS_STRING);
 }
 
-rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rbusSetOptions_t* opts)
+rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rbusSetHandlerOptions_t* opts)
 {
     rbusError_t errorcode = RBUS_ERROR_INVALID_INPUT;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
@@ -3757,7 +3757,10 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
         rbusMessage_SetInt32(setRequest, 0);
 
     /* Set the Component name that invokes the set */
-    rbusMessage_SetString(setRequest, handleInfo->componentName);
+    if ((opts) && opts->requestingComponent != NULL)
+        rbusMessage_SetString(setRequest, opts->requestingComponent);
+    else
+        rbusMessage_SetString(setRequest, handleInfo->componentName);
     /* Set the Size of params */
     rbusMessage_SetInt32(setRequest, 1);
 
@@ -3809,7 +3812,7 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
     return errorcode;
 }
 
-rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t properties, rbusSetOptions_t* opts)
+rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t properties, rbusSetHandlerOptions_t* opts)
 {
     rbusError_t errorcode = RBUS_ERROR_INVALID_INPUT;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
@@ -3921,7 +3924,10 @@ rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t prop
                         rbusMessage_SetInt32(setRequest, 0);
 
                     /* Set the Component name that invokes the set */
-                    rbusMessage_SetString(setRequest, handleInfo->componentName);
+                    if ((opts) && opts->requestingComponent != NULL)
+                        rbusMessage_SetString(setRequest, opts->requestingComponent);
+                    else
+                        rbusMessage_SetString(setRequest, handleInfo->componentName);
                     /* Set the Size of params */
                     rbusMessage_SetInt32(setRequest, batchCount);
 
