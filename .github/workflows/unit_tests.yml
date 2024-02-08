@@ -102,4 +102,7 @@ jobs:
       - name: Stop rtrouted
         run: |
           killall -9 rtrouted
-          
+      - name: Run Code Coverage
+        run: |
+          cd build/rbus
+          make rbusCodeCoverageUI
