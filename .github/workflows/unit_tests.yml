@@ -104,5 +104,6 @@ jobs:
           killall -9 rtrouted
       - name: Run Code Coverage
         if: steps.cache.outputs.cache-hit != 'true'
+        path: build/rbus
         run: >
-          make build/rbus/rbusCodeCoverageUI
+          make rbusCodeCoverageUI
