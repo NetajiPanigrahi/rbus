@@ -102,7 +102,10 @@ jobs:
       - name: Stop rtrouted
         run: |
           killall -9 rtrouted
+      - name: Inside build folder
+        run: |
+          cd build/rbus
       - name: Run Code Coverage
         if: steps.cache.outputs.cache-hit != 'true'
         run: >
-          make -C build/rbus/rbusCodeCoverageUI
+          make rbusCodeCoverageUI
