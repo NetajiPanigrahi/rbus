@@ -105,4 +105,4 @@ jobs:
       - name: Run Code Coverage
         if: steps.cache.outputs.cache-hit != 'true'
         run: >
-          make rbusCodeCoverageUI
+          make -C build/rbus/rbusCodeCoverageUI
