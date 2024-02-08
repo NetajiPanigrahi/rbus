@@ -39,7 +39,8 @@ jobs:
           -B build/rbus 
           -DCMAKE_INSTALL_PREFIX="${{github.workspace}}/install/usr" 
           -DBUILD_FOR_DESKTOP=ON
-          -DENABLE_UNIT_TESTING=ON          
+          -DENABLE_UNIT_TESTING=ON
+          -DENABLE_CODE_COVERAGE=ON          
           -DCMAKE_BUILD_TYPE=Debug
       - name: Build Rbus
         if: steps.cache.outputs.cache-hit != 'true'
