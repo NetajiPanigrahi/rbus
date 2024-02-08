@@ -103,6 +103,7 @@ jobs:
         run: |
           killall -9 rtrouted
       - name: Run Code Coverage
-        run: |
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: >
           cd build/rbus
           make rbusCodeCoverageUI
