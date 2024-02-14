@@ -549,11 +549,14 @@ static int handle_get(const char * destination, const char * method, rbusMessage
       break;
     case RBUS_GTEST_GET19:
          rbusValue_t value;
-	     rbusValue_Init(&value);
-		 rbusValue_SetByte(value, 0xa);
+	 rbusValue_Init(&value);
+         rbusValue_SetByte(value, 0xa);
          rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
-		 rbusValue_appendToMessage(NULL, value, response);
-      /*
+         buffer = rbusValue_GetV(value);
+	 uint32_t len = 0;
+	 len = rbusValue_GetL(value); 
+	 rbusMessage_SetBytes(*response, buffer, len);
+	  /*
         rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
       snprintf(buffer, sizeof(buffer), "%x", GTEST_VAL_BYTE);
         */
