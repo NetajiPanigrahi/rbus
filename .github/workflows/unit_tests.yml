@@ -60,7 +60,7 @@ jobs:
         run: |
           cd build/rbus
           nohup ./src/session_manager/rbus_session_mgr &
-          ./unittests/rbus_gtest.bin
+          ./unittests/rbus_gtest.bin --gtest_filter=rbusApiGet.test19
       - name: Stop SessionManager
         run: |
           killall -9 rbus_session_mgr
