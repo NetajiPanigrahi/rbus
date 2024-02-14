@@ -549,7 +549,7 @@ static int handle_get(const char * destination, const char * method, rbusMessage
       break;
     case RBUS_GTEST_GET19:
       rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
-      snprintf(buffer, sizeof(buffer), "%s", GTEST_VAL_STRING);
+      snprintf(buffer, sizeof(buffer), "%u", GTEST_VAL_BYTE);
       break;
     case RBUS_GTEST_GET20:
       {
