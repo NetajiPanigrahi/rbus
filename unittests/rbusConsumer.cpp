@@ -60,6 +60,11 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
 
   rc = RBUS_ERROR_BUS_ERROR;
   type = rbusValue_GetType(val);
+  if ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) || 
+	  (0 == strcmp(param,"Device.rbuscoreProvider.GetLegBase64")))
+  {
+	  printf(">>>> %s:Type:%d\n", param, type);
+  }
   if( ((0 == strcmp(param,"Device.rbusProvider.Int16")) && (RBUS_INT16 == type) && (GTEST_VAL_INT16 == rbusValue_GetInt16(val))) ||
       ((0 == strcmp(param,"Device.rbusProvider.Int64")) && (RBUS_INT64 == type) && (GTEST_VAL_INT64 == rbusValue_GetInt64(val))) ||
       ((0 == strcmp(param,"Device.rbusProvider.Int32")) && (RBUS_INT32 == type) && (GTEST_VAL_INT32 == rbusValue_GetInt32(val))) ||
