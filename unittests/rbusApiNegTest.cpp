@@ -385,6 +385,7 @@ TEST(rbusSetMultiNegTest, test1)
 
     handle = (struct _rbusHandle *) malloc(sizeof(struct _rbusHandle));
     rc = rbus_setMulti(handle, 0, next, NULL);
+    printf(>> %s: rc value:%d\n", __FUNCTION__, rc);
     EXPECT_EQ(rc,RBUS_ERROR_INVALID_INPUT);
     free(handle);
 }
@@ -396,6 +397,7 @@ TEST(rbusSetMultiNegTest, test2)
 
     handle = (struct _rbusHandle *) malloc(sizeof(struct _rbusHandle));
     rc = rbus_setMulti(handle, 1, NULL, NULL);
+    printf(>> %s: rc value:%d\n", __FUNCTION__, rc);
     EXPECT_EQ(rc,RBUS_ERROR_INVALID_INPUT);
     free(handle);
 }
