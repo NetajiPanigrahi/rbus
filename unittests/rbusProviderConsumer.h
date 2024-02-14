@@ -107,3 +107,4 @@ int rbuscoreProvider(rbusGtest_t test, pid_t pid, int *consumer_status);
 #define GTEST_VAL_SINGLE (float)3.141592653589793f
 #define GTEST_VAL_DOUBLE (double)3.141592653589793
 #define GTEST_VAL_STRING "legacy_test"
+#define GTEST_VAL_BYTE (uint8_t)0xAB
