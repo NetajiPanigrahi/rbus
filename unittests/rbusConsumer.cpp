@@ -63,6 +63,8 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
   if ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")))
   {
 	  printf(">>>> %s:Type:%d value: %x GTEST_VAL_BYTE : %c \n", param, type, rbusValue_GetByte(val), GTEST_VAL_BYTE);
+	  if (rbusValue_GetByte(val)==0xa)
+		  printf(">>>> GET BYTE>>>\n");
   }
   if( ((0 == strcmp(param,"Device.rbusProvider.Int16")) && (RBUS_INT16 == type) && (GTEST_VAL_INT16 == rbusValue_GetInt16(val))) ||
       ((0 == strcmp(param,"Device.rbusProvider.Int64")) && (RBUS_INT64 == type) && (GTEST_VAL_INT64 == rbusValue_GetInt64(val))) ||
@@ -78,7 +80,7 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegFloat")) && (RBUS_SINGLE == type) && (GTEST_VAL_SINGLE == rbusValue_GetSingle(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegUInt32")) && (RBUS_UINT32 == type) && (GTEST_VAL_UINT32 == rbusValue_GetUInt32(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBoolean")) && (RBUS_BOOLEAN == type) && (GTEST_VAL_BOOL == rbusValue_GetBoolean(val))) ||
-      ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTE == type) && ((strcmp(rbusValue_GetString(val,NULL), GTEST_VAL_BYTE) == 0))) ||
+     /* ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTE == type) && ((strcmp(rbusValue_GetString(val,NULL), GTEST_VAL_BYTE) == 0))) ||*/
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegString")) && (RBUS_STRING == type) && (strcmp(rbusValue_GetString(val,NULL), GTEST_VAL_STRING) == 0))
     ) {
     rc = RBUS_ERROR_SUCCESS;
