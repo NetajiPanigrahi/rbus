@@ -79,7 +79,7 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegFloat")) && (RBUS_SINGLE == type) && (GTEST_VAL_SINGLE == rbusValue_GetSingle(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegUInt32")) && (RBUS_UINT32 == type) && (GTEST_VAL_UINT32 == rbusValue_GetUInt32(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBoolean")) && (RBUS_BOOLEAN == type) && (GTEST_VAL_BOOL == rbusValue_GetBoolean(val))) ||
-      ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTE == type) && (strcmp(rbusValue_GetString(val,NULL), GTEST_VAL_STRING) == 0)) ||
+      ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTE == type) && (GTEST_VAL_BYTE == rbusValue_GetByte(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegString")) && (RBUS_STRING == type) && (strcmp(rbusValue_GetString(val,NULL), GTEST_VAL_STRING) == 0))
     ) {
     rc = RBUS_ERROR_SUCCESS;
