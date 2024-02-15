@@ -549,6 +549,7 @@ static int handle_get(const char * destination, const char * method, rbusMessage
       snprintf(buffer, sizeof(buffer), "%.15f", GTEST_VAL_DOUBLE);
       break;
     case RBUS_GTEST_GET19:
+      {
          rbusValue_t value;
 	 rbusValue_Init(&value);
          rbusValue_SetByte(value, 0xa);
@@ -563,7 +564,7 @@ static int handle_get(const char * destination, const char * method, rbusMessage
         snprintf(buffer, sizeof(buffer), "%s", "A");
     */   
       return 0;	    
-      break;
+      }
     case RBUS_GTEST_GET20:
       {
         struct tm compileTime;
