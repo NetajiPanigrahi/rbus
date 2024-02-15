@@ -88,12 +88,12 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
     if(ptr)
       rc = (memcmp(ptr, GTEST_VAL_STRING, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
 
-  } else if ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTES == type)) {
+  } else if ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTE == type)) {
     int len = 0;
     const uint8_t *ptr = rbusValue_GetBytes(val, &len);
     if(ptr) {
       printf(">>> DATA: %d", ptr[0]);	    
-     // rc = (memcmp(ptr, 97, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
+     // rc = (memcmp(ptr, 'A', len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
     }
   } else if((0 == strcmp(param,"Device.rbuscoreProvider.GetLegDouble")) && (RBUS_DOUBLE == type)) {
 
