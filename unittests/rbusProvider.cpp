@@ -24,6 +24,7 @@
 #include <rbuscore.h>
 #include <rbus.h>
 #include "rbusProviderConsumer.h"
+#include "rbus_buffer.h"
 #include <errno.h>
 
 #define __STDC_FORMAT_MACROS 1
@@ -548,7 +549,6 @@ static int handle_get(const char * destination, const char * method, rbusMessage
       snprintf(buffer, sizeof(buffer), "%.15f", GTEST_VAL_DOUBLE);
       break;
     case RBUS_GTEST_GET19:
-	    /*
          rbusValue_t value;
 	 rbusValue_Init(&value);
          rbusValue_SetByte(value, 0xa);
@@ -557,10 +557,10 @@ static int handle_get(const char * destination, const char * method, rbusMessage
 	 uint32_t len = 0;
 	 len = rbusValue_GetL(value); 
 	 rbusMessage_SetBytes(*response, buffer, len);
-  */
+  /*
         rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
         snprintf(buffer, sizeof(buffer), "%s", "A");
-       
+    */   
       break;
     case RBUS_GTEST_GET20:
       {
