@@ -596,7 +596,7 @@ static int handle_get(const char * destination, const char * method, rbusMessage
   rbusMessage_SetString(*response, buffer);
 char* buff = NULL;
 uint32_t buff_length = 0;
-rbusMessage_ToDebugString(response, &buff, &buff_length);
+rbusMessage_ToDebugString(*response, &buff, &buff_length);
 printf("%s\n", buff);
 free(buff);
 
