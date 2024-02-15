@@ -3314,6 +3314,11 @@ rbusError_t rbus_get(rbusHandle_t handle, char const* name, rbusValue_t* value)
     }
     else
     {
+	char* buff = NULL;
+        uint32_t buff_length = 0;
+        rbusMessage_ToDebugString(response, &buff, &buff_length);
+        printf("%s\n", buff);
+        free(buff);    
         int valSize;
         rbusLegacyReturn_t legacyRetCode = RBUS_LEGACY_ERR_FAILURE;
 
