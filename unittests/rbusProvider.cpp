@@ -552,8 +552,8 @@ static int handle_get(const char * destination, const char * method, rbusMessage
       {
          rbusValue_t value;
 	 rbusValue_Init(&value);
-         rbusValue_SetByte(value, 0xa);
-         //rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
+         rbusValue_SetByte(value, 91);
+         rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
 	 uint8_t const* buff = NULL;  
          buff = rbusValue_GetV(value);
 	 uint32_t len = 0;
