@@ -90,7 +90,7 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
 
   } else if (0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) {
     int len = 0;
-	  printf("%s: %d %s, \n", __FUNCTION__, __LINE__, rbusValue_GetString(val,NULL));
+	  printf("%s: %d %d, \n", __FUNCTION__, __LINE__, rbusValue_GetByte(val));
 	/*
 	    const uint8_t *ptr = rbusValue_GetBytes(val, &len);
 	  printf("ptr data: %d", *(ptr));
