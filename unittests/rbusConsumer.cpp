@@ -91,10 +91,11 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
   } else if (0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) {
     int len = 0;
 	  printf("%s: %d\n", __FUNCTION__, __LINE__);	 
-	  /*
-    const uint8_t *ptr = rbusValue_GetBytes(val, &len);
+	    const uint8_t *ptr = rbusValue_GetBytes(val, &len);
+	  printf("ptr data: %d", *(ptr));
     printf("%s: %d\n", __FUNCTION__, __LINE__);	  
-    if(ptr) {
+    /*
+     if(ptr) {
         rc = (memcmp(ptr, "A", len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
     }
     */
