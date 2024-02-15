@@ -614,7 +614,9 @@ int rbuscoreProvider(rbusGtest_t test, pid_t pid, int *consumer_status)
     case RBUS_GTEST_GET16: object_name = "Device.rbuscoreProvider.GetLegULong";    break;
     case RBUS_GTEST_GET17: object_name = "Device.rbuscoreProvider.GetLegFloat";    break;
     case RBUS_GTEST_GET18: object_name = "Device.rbuscoreProvider.GetLegDouble";   break;
-    case RBUS_GTEST_GET19: object_name = "Device.rbuscoreProvider.GetLegBytes";    break;
+    case RBUS_GTEST_GET19: object_name = "Device.rbuscoreProvider.GetLegBytes";    
+	    printf("%s: RBUS_GTEST_GET19 \n",__func__);
+            break;
     case RBUS_GTEST_GET20: object_name = "Device.rbuscoreProvider.GetLegDateTime"; break;
     case RBUS_GTEST_GET21: object_name = "Device.rbuscoreProvider.GetLegBase64";   break;
     case RBUS_GTEST_GET22: object_name = "Device.rbuscoreProvider.GetLegString";   break;
@@ -624,27 +626,28 @@ int rbuscoreProvider(rbusGtest_t test, pid_t pid, int *consumer_status)
 
   err = rbus_openBrokerConnection(object_name);
   EXPECT_EQ(err,RBUSCORE_SUCCESS);
+	printf("%s: %d \n",__func__, __LINE__);
   if(RBUSCORE_SUCCESS != err) goto exit1;
-
+printf("%s: %d \n",__func__, __LINE__);
   err = rbus_registerObj(object_name, handle_get, NULL);
   EXPECT_EQ(err,RBUSCORE_SUCCESS);
   if(RBUSCORE_SUCCESS != err) goto exit2;
-
+printf("%s: %d \n",__func__, __LINE__);
   err = rbus_registerMethodTable(object_name, table, 1);
   EXPECT_EQ(err,RBUSCORE_SUCCESS);
   if(RBUSCORE_SUCCESS != err) goto exit2;
-
+printf("%s: %d \n",__func__, __LINE__);
   wait_ret = waitpid(pid, consumer_status, 0);
   EXPECT_EQ(wait_ret,pid);
 
   if(wait_ret != pid) printf("%s: waitpid() failed %d: %s\n",__func__,errno,strerror(errno));
   rc = (wait_ret != pid) ? RBUS_ERROR_BUS_ERROR : RBUS_ERROR_SUCCESS;
-
+printf("%s: %d \n",__func__, __LINE__);
 exit2:
   err = rbus_closeBrokerConnection();
   EXPECT_EQ(err,RBUSCORE_SUCCESS);
   rc |= (RBUSCORE_SUCCESS == err) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
-
+printf("%s: %d \n",__func__, __LINE__);
 exit1:
   printf("%s: exit\n",__func__);
   return rc;
