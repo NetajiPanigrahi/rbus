@@ -550,6 +550,7 @@ static int handle_get(const char * destination, const char * method, rbusMessage
       break;
     case RBUS_GTEST_GET19:
       {
+#if 0
          rbusValue_t value;
 	 rbusValue_Init(&value);
          rbusValue_SetByte(value, 91);
@@ -559,11 +560,12 @@ static int handle_get(const char * destination, const char * method, rbusMessage
 	 uint32_t len = 0;
 	 len = rbusValue_GetL(value); 
 	 rbusMessage_SetBytes(*response, buff, len);
-  /*
+#else
         rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
-        snprintf(buffer, sizeof(buffer), "%s", "A");
-    */   
-      return 0;	    
+        snprintf(buffer, sizeof(buffer), "%c", 'A');
+#endif  
+      //return 0;
+	break;      
       }
     case RBUS_GTEST_GET20:
       {
