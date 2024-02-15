@@ -553,14 +553,16 @@ static int handle_get(const char * destination, const char * method, rbusMessage
 	 rbusValue_Init(&value);
          rbusValue_SetByte(value, 0xa);
          rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
-         buffer = rbusValue_GetV(value);
+	 uint8_t const* buff = NULL;  
+         buff = rbusValue_GetV(value);
 	 uint32_t len = 0;
 	 len = rbusValue_GetL(value); 
-	 rbusMessage_SetBytes(*response, buffer, len);
+	 rbusMessage_SetBytes(*response, buff, len);
   /*
         rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
         snprintf(buffer, sizeof(buffer), "%s", "A");
     */   
+      return 0;	    
       break;
     case RBUS_GTEST_GET20:
       {
