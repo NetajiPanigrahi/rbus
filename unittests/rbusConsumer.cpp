@@ -92,8 +92,8 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
     int len = 0;
     const uint8_t *ptr = rbusValue_GetBytes(val, &len);
     if(ptr) {
-      printf(">>> DATA: %s", ptr[0]);	    
-      rc = (memcmp(ptr, 97, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
+      printf(">>> DATA: %d", ptr[0]);	    
+     // rc = (memcmp(ptr, 97, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
     }
   } else if((0 == strcmp(param,"Device.rbuscoreProvider.GetLegDouble")) && (RBUS_DOUBLE == type)) {
 
