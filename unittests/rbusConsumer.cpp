@@ -53,13 +53,17 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
   rbusValueType_t type = RBUS_NONE;
 
   isElementPresent(handle, param);
+	printf("%s %d\n", __FUNCTION__,__LINE__);
   rc = rbus_get(handle, param, &val);
   EXPECT_EQ(rc, RBUS_ERROR_SUCCESS);
+printf("%s %d\n", __FUNCTION__,__LINE__);
 
   if(RBUS_ERROR_SUCCESS != rc) goto exit;
 
   rc = RBUS_ERROR_BUS_ERROR;
+	printf("%s %d\n", __FUNCTION__,__LINE__);
   type = rbusValue_GetType(val);
+	printf("%s %d\n", __FUNCTION__,__LINE__);
   if ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")))
   {
 	  printf(">>>> %s:Type:%d \n", param, type);
