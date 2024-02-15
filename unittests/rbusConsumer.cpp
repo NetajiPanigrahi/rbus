@@ -88,7 +88,7 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
     if(ptr)
       rc = (memcmp(ptr, GTEST_VAL_STRING, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
 
-  } else if (0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes") && (RBUS_BYTES == type)) {
+  } else if (0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes") && (RBUS_BYTE == type)) {
     int len = 0;
 	  printf("%s: %d %d, \n", __FUNCTION__, __LINE__, rbusValue_GetByte(val));
 	  if(rbusValue_GetByte(val)==65)
