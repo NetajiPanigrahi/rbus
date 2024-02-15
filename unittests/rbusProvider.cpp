@@ -562,7 +562,8 @@ static int handle_get(const char * destination, const char * method, rbusMessage
 	 rbusMessage_SetBytes(*response, buff, len);
 */
         rbusMessage_SetInt32(*response, RBUS_LEGACY_BYTE);
-        snprintf(buffer, sizeof(buffer), "%c", 'A');  
+	      #define BYES_DATA 0x3D
+        snprintf(buffer, sizeof(buffer), "%x", BYES_DATA);  
       //return 0;
 	     
       }
