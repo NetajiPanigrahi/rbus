@@ -78,7 +78,6 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegFloat")) && (RBUS_SINGLE == type) && (GTEST_VAL_SINGLE == rbusValue_GetSingle(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegUInt32")) && (RBUS_UINT32 == type) && (GTEST_VAL_UINT32 == rbusValue_GetUInt32(val))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBoolean")) && (RBUS_BOOLEAN == type) && (GTEST_VAL_BOOL == rbusValue_GetBoolean(val))) ||
-      ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")) && (RBUS_BYTE == type) && ((strcmp(rbusValue_GetString(val,NULL), "A") == 0))) ||
       ((0 == strcmp(param,"Device.rbuscoreProvider.GetLegString")) && (RBUS_STRING == type) && (strcmp(rbusValue_GetString(val,NULL), GTEST_VAL_STRING) == 0))
     ) {
     rc = RBUS_ERROR_SUCCESS;
@@ -89,6 +88,13 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
     if(ptr)
       rc = (memcmp(ptr, GTEST_VAL_STRING, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
 
+  } else if ((0 == strcmp(param,"(0 == strcmp(param,"Device.rbuscoreProvider.GetLegBytes")")) && (RBUS_BYTES == type)) {
+    int len = 0;
+    const uint8_t *ptr = rbusValue_GetBytes(val, &len);
+    if(ptr) {
+      printf(">>> DATA: %s", *ptr);	    
+      rc = (memcmp(ptr, 0x0a, len) == 0) ? RBUS_ERROR_SUCCESS : RBUS_ERROR_BUS_ERROR;
+    }
   } else if((0 == strcmp(param,"Device.rbuscoreProvider.GetLegDouble")) && (RBUS_DOUBLE == type)) {
 
     double retval=rbusValue_GetDouble(val);
