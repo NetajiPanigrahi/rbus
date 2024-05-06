@@ -1132,17 +1132,19 @@ TEST_F(TestServer, rtmsg_rtConnection_CreateWithConfig_test3)
 
 TEST_F(TestServer, rtmsg_rtConnection_SendResponse_test1)
 {
-  char *name = "sample_test";
-  rtMessageHeader const* hdr = (const rtMessageHeader*)name;
+  rtMessageHeader hdr;
   char* buff = "TestName";
   rtError err;
   rtMessage res;
 
   rtConnection  con;
   rtConnection_Create(&con, "PROVIDER1", "unix:///tmp/rtrouted");
+  #ifdef MSG_ROUNDTRIP_TIME
+  rtMessageHeader_Init(&hdr);
+  #endif
   rtMessage_Create(&res);
   rtMessage_SetString(res, "reply", buff);
-  err = rtConnection_SendResponse(con, hdr, res, 1000);
+  err = rtConnection_SendResponse(con, &hdr, res, 1000);
   EXPECT_EQ(err, RT_OK);
   rtMessage_Release(res);
   rtConnection_Destroy(con);
@@ -1189,7 +1191,7 @@ TEST_F(TestServer, rtmsg_rtMessage_SetMessage_test1)
     rtMessage req = NULL, msg = NULL;
     rtMessage item, p;
     char* s = NULL;
-    char val;
+    char val[10];
     uint32_t n = 0;
     uint32_t size = 0;
     rtError err;
@@ -1218,7 +1220,7 @@ TEST_F(TestServer, rtmsg_rtMessage_SetMessage_test1)
     //Neg test passing invalid param
     err = rtMessage_GetMessageItem(item, "params", j, &p);
     EXPECT_EQ(err, RT_PROPERTY_NOT_FOUND) << "rtMessage_GetMessageItem failed";
-    err = rtMessage_GetStringValue(req, "method", &val, 10);
+    err = rtMessage_GetStringValue(req, "method", val, 10);
     EXPECT_EQ(err, RT_OK) << "rtMessage_GetStringValue failed";
     //Neg test passing invalid param
     err = rtMessage_SetMessage(NULL, "params", item);
