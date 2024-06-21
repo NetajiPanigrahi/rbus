@@ -1197,32 +1197,41 @@ void validate_and_execute_get_cmd (int argc, char *argv[])
 
     if(RBUS_ERROR_SUCCESS == rc)
     {
-        rbusProperty_t next = outputVals;
-        for (i = 0; i < numOfOutVals; i++)
-        {
-            rbusValue_t val = rbusProperty_GetValue(next);
-            rbusValueType_t type = rbusValue_GetType(val);
-            char *pStrVal = rbusValue_ToString(val,NULL,0);
+	 runSteps = __LINE__;    
+        if (outputVals)
+	{
+	    rbusProperty_t next = outputVals;
+            for (i = 0; i < numOfOutVals; i++)
+            {
+                rbusValue_t val = rbusProperty_GetValue(next);
+                rbusValueType_t type = rbusValue_GetType(val);
+                char *pStrVal = rbusValue_ToString(val,NULL,0);
 
-	    if ((strcmp("-g", argv[1]) == 0))
-	    {
-		printf ("%s\n", pStrVal);
+	        if ((strcmp("-g", argv[1]) == 0))
+	        {
+		    printf ("%s\n", pStrVal);
+	        }
+	        else
+	        {
+		    printf ("Parameter %2d:\n\r", i+1);
+		    printf ("              Name  : %s\n\r", rbusProperty_GetName(next));
+		    printf ("              Type  : %s\n\r", getDataType_toString(type));
+		    printf ("              Value : %s\n\r", pStrVal);
+	        }
+	        if(pStrVal)
+	        {
+		    free(pStrVal);
+	        }
+	        next = rbusProperty_GetNext(next);
 	    }
-	    else
-	    {
-		printf ("Parameter %2d:\n\r", i+1);
-		printf ("              Name  : %s\n\r", rbusProperty_GetName(next));
-		printf ("              Type  : %s\n\r", getDataType_toString(type));
-		printf ("              Value : %s\n\r", pStrVal);
-	    }
-	    if(pStrVal)
-	    {
-		free(pStrVal);
-	    }
-	    next = rbusProperty_GetNext(next);
+            /* Free the memory */
+            rbusProperty_Release(outputVals);
+        }
+	else
+	{
+		 runSteps = __LINE__;
+		printf ("%s:%d\n",__FUNCTION__, __LINE__);
 	}
-        /* Free the memory */
-        rbusProperty_Release(outputVals);
     }
     else
     {
