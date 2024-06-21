@@ -3533,7 +3533,10 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                     free(destinations[i]);
                 free(destinations);
 
-                return errorcode;
+                if (*retProperties != NULL)
+		    return RBUS_ERROR_SUCCESS;
+		else
+		    return errorcode;
             }
         }
         else
