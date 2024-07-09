@@ -3494,7 +3494,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                         }
                         else
                         {
-                            rbusProperty_t tmpProperties;
+                            rbusProperty_t tmpProperties = NULL;
 
                             if((errorcode = _getExt_response_parser(response, &tmpNumOfValues, &tmpProperties)) != RBUS_ERROR_SUCCESS)
                             {
@@ -3532,8 +3532,16 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                 for(i = 0; i < numDestinations; i++)
                     free(destinations[i]);
                 free(destinations);
+                if ((*retProperties != NULL) && (errorcode != RBUS_ERROR_SUCCESS))
+                {
+                    RBUSLOG_WARN("Query for expression %s was partially successful", pParamNames[0]);
+                    return RBUS_ERROR_SUCCESS;
+                }
+                else 
+                {
+                    return errorcode;
+                }
 
-                return errorcode;
             }
         }
         else
@@ -3634,7 +3642,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                     }
                     else
                     {
-                        rbusProperty_t batchResult;
+                        rbusProperty_t batchResult = NULL;
                         int batchNumVals;
                         if((errorcode = _getExt_response_parser(response, &batchNumVals, &batchResult)) != RBUS_ERROR_SUCCESS)
                         {
