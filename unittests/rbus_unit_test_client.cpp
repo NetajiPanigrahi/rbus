@@ -76,12 +76,12 @@ static bool CALL_RBUS_OPEN_BROKER_CONNECTION(char* client_name)
     bool result = false;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
 
-    if((err = rbus_openBrokerConnection(client_name)) == RBUSCORE_SUCCESS)
+    if((err = rbuscore_openBrokerConnection(client_name)) == RBUSCORE_SUCCESS)
     {
          //printf("Successfully connected to bus.\n");
          result = true;
     }
-    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbus_openBrokerConnection failed";
+    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbuscore_openBrokerConnection failed";
     return result;
 }
 
@@ -89,12 +89,12 @@ static bool CALL_RBUS_CLOSE_BROKER_CONNECTION()
 {
     bool result = false;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
-    if((err = rbus_closeBrokerConnection()) == RBUSCORE_SUCCESS)
+    if((err = rbuscore_closeBrokerConnection()) == RBUSCORE_SUCCESS)
     {
         //printf("Successfully disconnected from bus.\n");
         result = true;
     }
-    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbus_openBrokerConnection failed";
+    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbuscore_openBrokerConnection failed";
     return result;
 }
 
@@ -103,11 +103,11 @@ static bool CALL_RBUS_PULL_OBJECT(char* expected_data, char* server_obj)
     bool result = false;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
     rbusMessage response;
-    if((err = rbus_pullObj(server_obj, 1000, &response)) == RBUSCORE_SUCCESS)
+    if((err = rbuscore_pullObj(server_obj, 1000, &response)) == RBUSCORE_SUCCESS)
     {
         const char* buff = NULL;
         rbusMessage_GetString(response, &buff);
-        EXPECT_STREQ(buff, expected_data) << "rbus_pullObj failed to procure the server's initial string -init init init- ";
+        EXPECT_STREQ(buff, expected_data) << "rbuscore_pullObj failed to procure the server's initial string -init init init- ";
         rbusMessage_Release(response);
         result = true;
     }
@@ -115,7 +115,7 @@ static bool CALL_RBUS_PULL_OBJECT(char* expected_data, char* server_obj)
     {
         printf("Could not pull object %s\n", server_obj);
     }
-    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbus_pullObj failed";
+    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbuscore_pullObj failed";
     return result;
 }
 
@@ -125,8 +125,8 @@ static bool CALL_RBUS_PUSH_OBJECT(char* data, char* server_obj)
     rbusMessage setter;
     rbusMessage_Init(&setter);
     rbusMessage_SetString(setter, data);
-    err = rbus_pushObj(server_obj, setter, 1000);
-    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbus_pushObj failed";
+    err = rbuscore_pushObj(server_obj, setter, 1000);
+    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbuscore_pushObj failed";
     return true;
 }
 
@@ -136,8 +136,8 @@ static bool CALL_RBUS_PUSH_OBJECT_NO_ACK(char* data, char* server_obj)
     rbusMessage setter;
     rbusMessage_Init(&setter);
     rbusMessage_SetString(setter, data);
-    err = rbus_pushObjNoAck(server_obj, setter);
-    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbus_pushObj failed";
+    err = rbuscore_pushObjNoAck(server_obj, setter);
+    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbuscore_pushObj failed";
     return true;
 }
 
@@ -151,7 +151,7 @@ static bool CALL_RBUS_PUSH_OBJECT_DETAILED(char* server_obj, test_struct_t ip_da
     //printf("Set name : %s \n",ip_data.name);
     rbusMessage_SetInt32(setter, ip_data.age);
     //printf("Set age : %d  \n", ip_data.age);
-    err = rbus_invokeRemoteMethod(server_obj, METHOD_SETPARAMETERATTRIBUTES, setter, 1000, &response);
+    err = rbuscore_invokeRemoteMethod(server_obj, METHOD_SETPARAMETERATTRIBUTES, setter, 1000, &response);
     EXPECT_EQ(err, RBUSCORE_SUCCESS) << "RPC invocation failed";
 
     if(RBUSCORE_SUCCESS == err)
@@ -165,7 +165,7 @@ static bool CALL_RBUS_PULL_OBJECT_DETAILED(char* server_obj, test_struct_t expec
     int age = 0;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
     rbusMessage response;
-    if((err = rbus_invokeRemoteMethod(server_obj, METHOD_GETPARAMETERATTRIBUTES, NULL, 1000, &response)) == RBUSCORE_SUCCESS)
+    if((err = rbuscore_invokeRemoteMethod(server_obj, METHOD_GETPARAMETERATTRIBUTES, NULL, 1000, &response)) == RBUSCORE_SUCCESS)
     {
         const char* buff = NULL;
         rbusMessage_GetString(response, &buff);
@@ -179,7 +179,7 @@ static bool CALL_RBUS_PULL_OBJECT_DETAILED(char* server_obj, test_struct_t expec
     {
         printf("Could not invoke remote method %s\n", server_obj);
     }
-    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbus_invokeRemoteMethod failed";
+    EXPECT_EQ(err, RBUSCORE_SUCCESS) << "rbuscore_invokeRemoteMethod failed";
     return result;
 }
 

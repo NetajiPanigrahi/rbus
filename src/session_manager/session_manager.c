@@ -244,11 +244,11 @@ int main(int argc, char *argv[])
     }
 
 #if 0
-    if ((rc = rbus_unregisterObj(RBUS_SMGR_DESTINATION_NAME)) == RBUSCORE_SUCCESS)
+    if ((rc = rbuscore_unregisterObj(RBUS_SMGR_DESTINATION_NAME)) == RBUSCORE_SUCCESS)
     {
         printf("Successfully Unregistered object.\n");
     }
-    if ((rc = rbus_registerObj(RBUS_SMGR_DESTINATION_NAME, callback, NULL)) == RBUSCORE_SUCCESS)
+    if ((rc = rbuscore_registerObj(RBUS_SMGR_DESTINATION_NAME, callback, NULL)) == RBUSCORE_SUCCESS)
     {
         printf("Successfully registered object.\n");
     }
