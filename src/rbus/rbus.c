@@ -455,7 +455,7 @@ rbusError_t rbusValue_initFromMessage(rbusValue_t* value, rbusMessage msg)
     if(type>=RBUS_LEGACY_STRING && type<=RBUS_LEGACY_NONE)
     {
         rbusMessage_GetString(msg, &pBuffer);
-        RBUSLOG_DEBUG("Received Param Value in string : [%s]", pBuffer);
+        RBUSLOG_DEBUG("Received Param Value in string : [%s], type:%d", pBuffer, type);
         rc = _parse_rbusData_to_value (pBuffer, type, *value);
         if(!rc)
         {
