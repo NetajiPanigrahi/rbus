@@ -1202,7 +1202,8 @@ bool rbusValue_SetFromString(rbusValue_t value, rbusValueType_t type, const char
         {
             struct tm tv;
             rbusDateTime_t tvm = {{0},{0}};
-            if(0 != strncmp(pStringInput,"0000-",5)) {
+            if (strlen(pStringInput) && (0 != strncmp(pStringInput,"0000-",5)))
+            {
                 char *pRet = NULL;
                 if(strstr(pStringInput,"T"))
                     pRet=(char *)strptime(pStringInput, "%Y-%m-%dT%H:%M:%S", &(tv));
