@@ -104,7 +104,7 @@ rbusError_t SampleProvider_DeviceGetHandler(rbusHandle_t handle, rbusProperty_t 
 
     name = rbusProperty_GetName(property);
 
-    if (strcmp(name, "Device.DeviceInfo.SampleProvider.LargeData") == 0)
+    if (strcmp(name, "Device.DeviceInfo.SampleProvider.AssocClients") == 0)
     {
         char *str = (char *)malloc(size * sizeof(char));
         memset(str, 'A', size - 1); // Fill with 'A's
