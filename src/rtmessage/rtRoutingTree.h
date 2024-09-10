@@ -140,6 +140,7 @@ typedef struct rtTreeTopic
     rtList childList;       /*list of rtTreeTopic: list of child topics*/
     rtList routeList;       /*list of rtTreeRoute: list of routes directly assigned to this topic*/
     rtList routeList2;      /*list of rtTreeRoute: list of all routes either assigned to this topic or assigned to a descendents topic (except leaf nodes)*/
+    rtList notifyList;
     char* name;
     char* fullName;
     int isTable;
