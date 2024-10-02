@@ -3707,8 +3707,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         }
         return rc;
     }
-
-    prop = rbusObject_GetProperties(outParams);
+    rbusProperty_t prop = rbusObject_GetProperties(outParams);
     while(prop)
     {
         value = rbusProperty_GetValue(prop);
