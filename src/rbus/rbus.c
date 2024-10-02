@@ -3710,7 +3710,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         value = rbusProperty_GetValue(prop);
         if(value)
         {
-            type = rbusValue_GetType(value);
+            //type = rbusValue_GetType(value);
             const rbusElementAttributesInfo_t * ptr;
             int size = 0;
             ptr = (rbusElementAttributesInfo_t*) rbusValue_GetBytes(value, &size);
