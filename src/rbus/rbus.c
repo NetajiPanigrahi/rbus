@@ -3671,11 +3671,11 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 {
     rbusError_t rc = RBUS_ERROR_SUCCESS;
     rbusValue_t value = NULL;
-    rbusObject_t outParams = NULL;
+    rbusObject_t inParams,outParams = NULL;
     rbusProperty_t list, prop = NULL;
     rbusValueType_t type = RBUS_NONE;
-    const char *parameterNames = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
-    for(i = 0; i < 2; i++)
+    const char *parameterNames[2] = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
+    for(int i = 0; i < 2; i++)
     {
         rbusProperty_Init(&prop, parameterNames[i], NULL);
         if (list == NULL)
@@ -3694,7 +3694,6 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     {
         if(outParams)
         {
-            printf("%s failed for %s with err: '%s'\n\r",cmd, method,rbusError_ToString(rc));
             rbusObject_fwrite(outParams, 1, stdout);
             rbusObject_Release(outParams);
         }
@@ -3702,7 +3701,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         {
             printf("Unexpected error in handling outparams\n");
         }
-        return;
+        return rc;
     }
 
     prop = rbusObject_GetProperties(outParams);
@@ -3722,6 +3721,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 
     if(outParams)
         rbusObject_Release(outParams);
+    return rc;
 }
 
 #if 0
