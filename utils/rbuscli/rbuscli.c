@@ -1682,6 +1682,14 @@ void validate_and_execute_getnames_cmd (int argc, char *argv[])
 
 void validate_and_execute_getattributes_cmd (int argc, char *argv[])
 {
+    rbusError_t rc;
+    rc = rbus_getParameterAttributesExt(g_busHandle);
+    printf ("Retun value : %d\n\r",rc);
+}
+
+#if 0
+void validate_and_execute_getattributes_cmd (int argc, char *argv[])
+{
     rbusElementAttributesInfo_t* elemAttributesInfo = NULL;
     int numOfInputParams = argc - 2;
     const char *pInputParam[RBUS_CLI_MAX_PARAM] = {0, 0};
@@ -1755,8 +1763,7 @@ void validate_and_execute_getattributes_cmd (int argc, char *argv[])
         printf ("Failed to get the data. Error : %d\n\r",rc);
     }
 }
-
-
+#endif
 
 void validate_and_execute_getrownames_cmd (int argc, char *argv[])
 {

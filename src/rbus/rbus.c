@@ -3667,6 +3667,64 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
     return errorcode;
 }
 
+rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
+{
+    rbusError_t rc = RBUS_ERROR_SUCCESS;
+    rbusValue_t value = NULL;
+    rbusObject_t outParams = NULL;
+    rbusProperty_t list, prop = NULL;
+    rbusValueType_t type = RBUS_NONE;
+    const char *parameterNames = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
+    for(i = 0; i < 2; i++)
+    {
+        rbusProperty_Init(&prop, parameterNames[i], NULL);
+        if (list == NULL)
+            list = prop;
+        else
+        {
+            rbusProperty_Append(list, prop);
+            rbusProperty_Release(prop);
+        }
+    }
+    rbusObject_SetProperties(inParams,list);
+    rc = rbusMethod_Invoke(handle, "eRT.com.cisco.spvtg.ccsp.wifi.GetAttributes()", inParams, &outParams);
+   if(inParams)
+        rbusObject_Release(inParams);
+    if(RBUS_ERROR_SUCCESS != rc)
+    {
+        if(outParams)
+        {
+            printf("%s failed for %s with err: '%s'\n\r",cmd, method,rbusError_ToString(rc));
+            rbusObject_fwrite(outParams, 1, stdout);
+            rbusObject_Release(outParams);
+        }
+        else
+        {
+            printf("Unexpected error in handling outparams\n");
+        }
+        return;
+    }
+
+    prop = rbusObject_GetProperties(outParams);
+    while(prop)
+    {
+        value = rbusProperty_GetValue(prop);
+        if(value)
+        {
+            type = rbusValue_GetType(value);
+            const rbusElementAttributesInfo_t * ptr;
+            int size = 0;
+            ptr = (rbusElementAttributesInfo_t*) rbusValue_GetBytes(val, &size);
+            printf("Payload: Name: %s\n", ptr->name, getDataType_toString(type));
+        }
+        prop = rbusProperty_GetNext(prop);
+    }
+
+    if(outParams)
+        rbusObject_Release(outParams);
+}
+
+#if 0
 rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
         char const** pParamNames, rbusElementAttributesInfo_t** elemAttributesInfo)
 {
@@ -3945,7 +4003,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
     RBUSLOG_ERROR("=====> %s %d", __FUNCTION__, __LINE__);
     return errorcode;
 }
-
+#endif
 static rbusError_t rbus_getByType(rbusHandle_t handle, char const* paramName, void* paramVal, rbusValueType_t type)
 {
     rbusError_t errorcode = RBUS_ERROR_INVALID_INPUT;

@@ -971,12 +971,16 @@ rbusError_t rbus_getExt(
  *  Possible values are:
  *  RBUS_ERROR_ACCESS_NOT_ALLOWED: Access to the requested parameter is not permitted
  */
+#if 0
 rbusError_t rbus_getParameterAttributesExt(
         rbusHandle_t handle,
         int paramCount,
         char const** pParamNames,
         rbusElementAttributesInfo_t** elemAttributesInfo);
-
+#endif
+rbusError_t rbus_getParameterAttributesExt(
+        rbusHandle_t handle
+);
 rbusError_t rbus_getBoolean(
     rbusHandle_t handle,
     char const* paramName,
