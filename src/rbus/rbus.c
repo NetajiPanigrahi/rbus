@@ -3668,8 +3668,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
 }
 
 rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle, int paramCount,
-        char const** pParamNames,
-        rbusElementAttributesInfo_t** elemAttributesInfo)
+        char const** pParamNames, rbusElementAttributesInfo_t** elemAttributesInfo)
 {
     rbusError_t errorcode = RBUS_ERROR_SUCCESS;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
