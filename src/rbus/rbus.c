@@ -3713,8 +3713,8 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
             type = rbusValue_GetType(value);
             const rbusElementAttributesInfo_t * ptr;
             int size = 0;
-            ptr = (rbusElementAttributesInfo_t*) rbusValue_GetBytes(val, &size);
-            //printf("Payload: Name: %s\n", ptr->name, getDataType_toString(type));
+            ptr = (rbusElementAttributesInfo_t*) rbusValue_GetBytes(value, &size);
+            printf("Payload: Name: %s\n", ptr->name,);
         }
         prop = rbusProperty_GetNext(prop);
     }
