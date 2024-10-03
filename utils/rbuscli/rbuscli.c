@@ -1683,6 +1683,8 @@ void validate_and_execute_getnames_cmd (int argc, char *argv[])
 void validate_and_execute_getattributes_cmd ()
 {
     rbusError_t rc;
+    if (!verify_rbus_open())
+        return;
     rc = rbus_getParameterAttributesExt(g_busHandle);
     printf ("Retun value : %d\n\r",rc);
 }
