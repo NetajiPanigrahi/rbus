@@ -3730,13 +3730,12 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
             //type = rbusValue_GetType(value);
 	    	
             int size = 0;
-            parameterAttribute = rbusValue_GetBytes(value, &size);
-            printf("Payload: Name: %s\n", ptr->name);
+            parameterAttribute = (rbusElementAttributesInfo_t *)rbusValue_GetBytes(value, &size);
         }
         prop = rbusProperty_GetNext(prop);
     }
 
-    for(i = 0; i < param_size; i++)
+    for(int i = 0; i < param_size; i++)
     {
         printf("Payload: Name: %s\n", parameterAttribute[i].parameterName);
     }
