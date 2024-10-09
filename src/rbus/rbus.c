@@ -3737,7 +3737,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 
     for(int i = 0; i < param_size; i++)
     {
-        printf("Payload: Name: %s\n", parameterAttribute[i].parameterName);
+        printf("Payload: Name: %s\n", parameterAttribute[i].name);
     }
 
     if(outParams)
