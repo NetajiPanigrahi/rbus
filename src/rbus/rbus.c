@@ -3694,6 +3694,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     rc = rbusMethod_Invoke(handle, "eRT.com.cisco.spvtg.ccsp.wifi.GetAttributes()", inParams, &outParams);
    if(inParams)
         rbusObject_Release(inParams);
+#if 0	
     if(RBUS_ERROR_SUCCESS != rc)
     {
         if(outParams)
@@ -3707,19 +3708,37 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         }
         return rc;
     }
+	#endif
+    rbusElementAttributesInfo_t * parameterAttribute = 0;
     rbusProperty_t prop = rbusObject_GetProperties(outParams);
+    int param_size = 0;	
+    if (prop)
+    {
+        param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
+	if(param_size > 0)
+        {
+            parameterAttribute = rt_try_malloc(param_size*sizeof(rbusElementAttributesInfo_t));
+            memset(parameterAttribute, 0, param_size*sizeof(rbusElementAttributesInfo_t));
+        }    
+    }
+    prop = rbusProperty_GetNext(prop);
     while(prop)
     {
         value = rbusProperty_GetValue(prop);
         if(value)
         {
             //type = rbusValue_GetType(value);
-            const rbusElementAttributesInfo_t * ptr;
+	    	
             int size = 0;
-            ptr = (rbusElementAttributesInfo_t*) rbusValue_GetBytes(value, &size);
+            parameterAttribute = rbusValue_GetBytes(value, &size);
             printf("Payload: Name: %s\n", ptr->name);
         }
         prop = rbusProperty_GetNext(prop);
+    }
+
+    for(i = 0; i < param_size; i++)
+    {
+        printf("Payload: Name: %s\n", parameterAttribute[i].parameterName);
     }
 
     if(outParams)
