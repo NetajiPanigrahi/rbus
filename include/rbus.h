@@ -1316,11 +1316,11 @@ rbusError_t rbusElementInfo_get(
 rbusError_t rbusElementInfo_free(
     rbusHandle_t handle, 
     rbusElementInfo_t* elemInfo);
-
+#if 0
 rbusError_t rbusElementAttributesInfo_free(
        rbusHandle_t handle,
        rbusElementAttributesInfo_t* elemInfo);
-
+#endif
 /** @} */
 
 /** @addtogroup Providers
