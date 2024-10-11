@@ -3709,7 +3709,8 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         return rc;
     }
 	#endif
-    rbusElementAttributesInfo_t * parameterAttribute = 0;
+    //rbusElementAttributesInfo_t * parameterAttribute = 0;
+    parameterAttributeStruct_t  * parameterAttribute = 0;
     rbusProperty_t prop = rbusObject_GetProperties(outParams);
     int param_size = 0;	
     if (prop)
@@ -3717,8 +3718,8 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
 	if(param_size > 0)
         {
-            parameterAttribute = rt_try_malloc(param_size*sizeof(rbusElementAttributesInfo_t));
-            memset(parameterAttribute, 0, param_size*sizeof(rbusElementAttributesInfo_t));
+            parameterAttribute = rt_try_malloc(param_size*sizeof(parameterAttributeStruct_t));
+            memset(parameterAttribute, 0, param_size*sizeof(parameterAttributeStruct_t));
         }    
     }
     prop = rbusProperty_GetNext(prop);
@@ -3730,14 +3731,14 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
             //type = rbusValue_GetType(value);
 	    	
             int size = 0;
-            parameterAttribute = (rbusElementAttributesInfo_t *)rbusValue_GetBytes(value, &size);
+            parameterAttribute = (parameterAttributeStruct_t *)rbusValue_GetBytes(value, &size);
         }
         prop = rbusProperty_GetNext(prop);
     }
 
     for(int i = 0; i < param_size; i++)
     {
-        printf("Payload - Name: %s\n", parameterAttribute[i].name);
+        printf("Payload - Name: %s\n", parameterAttribute[i].parameterName);
     }
 
     if(outParams)
@@ -4892,7 +4893,7 @@ rbusError_t rbusElementInfo_free(
     }
     return RBUS_ERROR_SUCCESS;
 }
-
+#if 0
 rbusError_t rbusElementAttributesInfo_free(
     rbusHandle_t handle, 
     rbusElementAttributesInfo_t* elemInfo)
@@ -4913,7 +4914,7 @@ rbusError_t rbusElementAttributesInfo_free(
     }
     return RBUS_ERROR_SUCCESS;
 }
-
+#endif
 
 //************************** Events ****************************//
 
