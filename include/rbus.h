@@ -651,7 +651,8 @@ typedef struct _rbusElementInfo
     uint32_t access;                /** rbusAccess_t flags OR'd*/
     struct _rbusElementInfo* next;  /** The next name in this list */    
 } rbusElementInfo_t;
-/*/
+
+#if 0
 typedef struct _rbusElementAttributesInfo
 {
     char const* name;               /** Fully qualified element name */
@@ -663,7 +664,7 @@ typedef struct _rbusElementAttributesInfo
 	uint32_t accessControlBitmask;
     struct _rbusElementAttributesInfo* next;  /** The next name in this list */    
 } rbusElementAttributesInfo_t;
-*/
+#endif
 enum access_e
 {
     CCSP_RO,
