@@ -3670,7 +3670,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
 rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 {
     rbusError_t rc = RBUS_ERROR_SUCCESS;
-    rbusValue_t value = NULL;
+    //rbusValue_t value = NULL;
     rbusObject_t inParams,outParams = NULL;
     rbusProperty_t list = NULL;
     //rbusValueType_t type = RBUS_NONE;
