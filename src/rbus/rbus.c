@@ -3710,7 +3710,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     }
 	#endif
     //rbusElementAttributesInfo_t * parameterAttribute = 0;
-    parameterAttributeStruct_t  * parameterAttribute = 0;
+    rbusparameterAttributeStruct_t  * parameterAttribute = 0;
     rbusProperty_t prop = rbusObject_GetProperties(outParams);
     int param_size = 0;	
     if (prop)
@@ -3718,8 +3718,8 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
 	if(param_size > 0)
         {
-            parameterAttribute = rt_try_malloc(param_size*sizeof(parameterAttributeStruct_t));
-            memset(parameterAttribute, 0, param_size*sizeof(parameterAttributeStruct_t));
+            parameterAttribute = rt_try_malloc(param_size*sizeof(rbusparameterAttributeStruct_t));
+            memset(parameterAttribute, 0, param_size*sizeof(rbusparameterAttributeStruct_t));
         }    
     }
     prop = rbusProperty_GetNext(prop);
@@ -3731,7 +3731,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
             //type = rbusValue_GetType(value);
 	    	
             int size = 0;
-            parameterAttribute = (parameterAttributeStruct_t *)rbusValue_GetBytes(value, &size);
+            parameterAttribute = (rbusparameterAttributeStruct_t *)rbusValue_GetBytes(value, &size);
         }
         prop = rbusProperty_GetNext(prop);
     }
