@@ -651,7 +651,7 @@ typedef struct _rbusElementInfo
     uint32_t access;                /** rbusAccess_t flags OR'd*/
     struct _rbusElementInfo* next;  /** The next name in this list */    
 } rbusElementInfo_t;
-
+/*/
 typedef struct _rbusElementAttributesInfo
 {
     char const* name;               /** Fully qualified element name */
@@ -663,6 +663,23 @@ typedef struct _rbusElementAttributesInfo
 	uint32_t accessControlBitmask;
     struct _rbusElementAttributesInfo* next;  /** The next name in this list */    
 } rbusElementAttributesInfo_t;
+*/
+enum access_e
+{
+    CCSP_RO,
+    CCSP_RW,
+    CCSP_WO
+};
+typedef struct
+{
+    char* parameterName;
+    bool notificationChanged;
+    bool notification;
+    enum access_e access;
+    bool accessControlChanged;
+    unsigned int accessControlBitmask;
+    unsigned int RequesterID;
+} parameterAttributeStruct_t;
 
 /** @} */
 /** @} */
