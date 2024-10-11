@@ -665,22 +665,22 @@ typedef struct _rbusElementAttributesInfo
     struct _rbusElementAttributesInfo* next;  /** The next name in this list */    
 } rbusElementAttributesInfo_t;
 #endif
-enum access_e
+enum rbus_access_e
 {
-    CCSP_RO,
-    CCSP_RW,
-    CCSP_WO
+    RBUS_RO,
+    RBUS_RW,
+    RBUS_WO
 };
 typedef struct
 {
     char* parameterName;
     bool notificationChanged;
     bool notification;
-    enum access_e access;
+    enum rbus_access_e access;
     bool accessControlChanged;
     unsigned int accessControlBitmask;
     unsigned int RequesterID;
-} parameterAttributeStruct_t;
+} rbusparameterAttributeStruct_t;
 
 /** @} */
 /** @} */
