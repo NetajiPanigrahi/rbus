@@ -3711,6 +3711,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 	#endif
     //rbusElementAttributesInfo_t * parameterAttribute = 0;
     rbusparameterAttributeStruct_t  * parameterAttribute = 0;
+    rbusObject_fwrite(outParams, 1, stdout);	
     rbusProperty_t prop = rbusObject_GetProperties(outParams);
     int param_size = 0;	
     if (prop)
@@ -3723,24 +3724,21 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         }    
     }
     prop = rbusProperty_GetNext(prop);
-    while(prop)
+    int size = 0;
+    if(prop)
     {
-        value = rbusProperty_GetValue(prop);
-        if(value)
+        parameterAttribute = (rbusparameterAttributeStruct_t *)rbusProperty_GetBytes(prop, &size);
+	printf("Size: %d", size);  
+    }
+
+    if ( size > 0)
+    {	
+	printf("Size: %d", size);    
+        for(int i = 0; i < param_size; i++)
         {
-            //type = rbusValue_GetType(value);
-	    	
-            int size = 0;
-            parameterAttribute = (rbusparameterAttributeStruct_t *)rbusValue_GetBytes(value, &size);
+            printf("Payload - Name: %s\n", parameterAttribute[i].parameterName);
         }
-        prop = rbusProperty_GetNext(prop);
     }
-
-    for(int i = 0; i < param_size; i++)
-    {
-        printf("Payload - Name: %s\n", parameterAttribute[i].parameterName);
-    }
-
     if(outParams)
         rbusObject_Release(outParams);
     return rc;
