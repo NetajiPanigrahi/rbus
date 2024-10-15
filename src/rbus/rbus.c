@@ -3702,9 +3702,10 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
     }
     prop = rbusProperty_GetNext(prop);
-    int size = 0;
+    
     if(prop)
     {
+	int size = 0;    
         rbusparameterAttributeStruct_t  * parameterAttribute = (rbusparameterAttributeStruct_t *)rbusProperty_GetBytes(prop, &size);
 	printf("Size: %d", size);
 	for(int i = 0; i < param_size; i++)
