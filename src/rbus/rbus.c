@@ -3721,17 +3721,17 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 	        size_t nameLength = strlen(Buffer) + 1;
 	        memcpy(name, Buffer, nameLength);
 	        Buffer += nameLength;	
-	        memcpy(notificationChanged, Buffer, sizeof(bool));
+	        memcpy(&notificationChanged, Buffer, sizeof(bool));
 	        Buffer += sizeof(bool);
-	        memcpy(notification, Buffer, sizeof(bool));
+	        memcpy(&notification, Buffer, sizeof(bool));
 	        Buffer += sizeof(bool);
-	        memcpy(access, Buffer, sizeof(int));
+	        memcpy(&access, Buffer, sizeof(int));
 	        Buffer += sizeof(int);
-	        memcpy(accessControlChanged, Buffer, sizeof(bool));
+	        memcpy(&accessControlChanged, Buffer, sizeof(bool));
 	        Buffer += sizeof(bool);
-	        memcpy(accessControlBitmask, Buffer, sizeof(unsigned int));
+	        memcpy(&accessControlBitmask, Buffer, sizeof(unsigned int));
 	        Buffer += sizeof(unsigned int);
-	        memcpy(RequesterID, Buffer, sizeof(unsigned int));
+	        memcpy(&RequesterID, Buffer, sizeof(unsigned int));
 	        Buffer += sizeof(unsigned int);
 		
 		printf("Name[%d] : %s notificationChanged: %d notification: %d access: %d accessControlChanged: %d accessControlBitmask: %u RequesterID %u \n", i, name, notificationChanged, notification,
