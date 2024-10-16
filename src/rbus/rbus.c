@@ -3705,7 +3705,39 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     
     if(prop)
     {
-	int size = 0;    
+	int size = 0;
+	char *Buffer  = (char*)rbusProperty_GetBytes(prop, &size);
+        for (size_t i = 0; i < size; i++)
+        {
+	    char name[50];
+	    bool notificationChanged;
+	    bool notification;
+	    int access;
+	    bool accessControlChanged;
+	    unsigned int accessControlBitmask;
+	    unsigned RequesterID;
+	    	    
+	        size_t nameLength = strlen(Buffer) + 1;
+	        memcpy(name, Buffer, nameLength);
+	        Buffer += nameLength;	
+	        memcpy(currentBufferPosition, Buffer, sizeof(bool));
+	        Buffer += sizeof(bool);
+	        memcpy(currentBufferPosition, Buffer, sizeof(bool));
+	        Buffer += sizeof(bool);
+	        memcpy(currentBufferPosition, Buffer, sizeof(int));
+	        Buffer += sizeof(int);
+	        memcpy(currentBufferPosition, Buffer, sizeof(bool));
+	        Buffer += sizeof(bool);
+	        memcpy(currentBufferPosition, Buffer, sizeof(unsigned int));
+	        Buffer += sizeof(unsigned int);
+	        memcpy(currentBufferPosition, Buffer, sizeof(unsigned int));
+	        Buffer += sizeof(unsigned int);
+		printf("Name[%d]: %s\n", i, name);
+     }
+ }
+ 
+#if 0
+	    
         rbusparameterAttributeStruct_t  * parameterAttribute = (rbusparameterAttributeStruct_t *)rbusProperty_GetBytes(prop, &size);
 	printf("Size: %d", size);
 	for(int i = 0; i < param_size; i++)
@@ -3713,7 +3745,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
             printf("Payload - Name: %s\n", parameterAttribute[i].parameterName);
         }
     }
-   
+#endif
     if(outParams)
         rbusObject_Release(outParams);
     return rc;
