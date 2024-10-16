@@ -3700,6 +3700,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     if (prop)
     {
         param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
+	printf("param_size: %d\n", param_size);     
     }
     prop = rbusProperty_GetNext(prop);
     
@@ -3715,7 +3716,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 	    int access;
 	    bool accessControlChanged;
 	    unsigned int accessControlBitmask;
-	    unsigned RequesterID;
+	    unsigned int RequesterID;
 	    	    
 	        size_t nameLength = strlen(Buffer) + 1;
 	        memcpy(name, Buffer, nameLength);
@@ -3732,7 +3733,12 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 	        Buffer += sizeof(unsigned int);
 	        memcpy(currentBufferPosition, Buffer, sizeof(unsigned int));
 	        Buffer += sizeof(unsigned int);
-		printf("Name[%d]: %s\n", i, name);
+		printf("Name[%ld] : %s , notificationChanged: %d notification: %d access: %d 
+			accessControlChanged: %d accessControlBitmask: %u RequesterID %u \n", i, name, notificationChanged, notification,
+			access,
+			accessControlChanged,
+			accessControlBitmask,
+			RequesterID);
      }
  }
  
@@ -3742,7 +3748,8 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 	printf("Size: %d", size);
 	for(int i = 0; i < param_size; i++)
         {
-            printf("Payload - Name: %s\n", parameterAttribute[i].parameterName);
+            printf("Payload - Name: %s\n", parameterAttribute[i].parameterName,
+	   notificationChanged, notification,  access,	  accessControlChanged,	    accessControlBitmask,   RequesterID);
         }
     }
 #endif
