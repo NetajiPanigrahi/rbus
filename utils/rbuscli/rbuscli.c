@@ -1680,9 +1680,11 @@ void validate_and_execute_getnames_cmd (int argc, char *argv[])
     }
 }
 
-void validate_and_execute_getattributes_cmd (int argc, char *argv[])
+void validate_and_execute_getattributes_cmd ()
 {
     rbusError_t rc;
+    if (!verify_rbus_open())
+        return;
     rc = rbus_getParameterAttributesExt(g_busHandle);
     printf ("Retun value : %d\n\r",rc);
 }
@@ -2430,7 +2432,7 @@ int handle_cmds (int argc, char *argv[])
     }
     else if(matchCmd(command, 4, "getattributes"))
     {
-        validate_and_execute_getattributes_cmd (argc, argv);
+        validate_and_execute_getattributes_cmd ();
     }
     else if(matchCmd(command, 4, "getrows") || matchCmd(command, 4, "getrownames"))
     {
