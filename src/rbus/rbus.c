@@ -3674,9 +3674,10 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     rbusObject_t inParams,outParams = NULL;
     rbusProperty_t list = NULL;
     //rbusValueType_t type = RBUS_NONE;
-    const char *parameterNames[2] = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
+    //const char *parameterNames[2] = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
+    const char *parameterNames[1] = {"Device.WiFi.SSID."};	
     rbusObject_Init(&inParams, NULL);
-    for(int i = 0; i < 2; i++)
+    for(int i = 0; i < 1; i++)
     {
 	rbusProperty_t prop;
         rbusProperty_Init(&prop, parameterNames[i], NULL);
