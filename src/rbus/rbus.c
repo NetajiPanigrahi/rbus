@@ -3717,23 +3717,23 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 		
                 localprop = rbusProperty_GetNext(localprop);
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop)));
 
 		localprop = rbusProperty_GetNext(localprop);
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetInt32(rbusProperty_GetValue(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetInt32(rbusProperty_GetValue(localprop)));
 
 		localprop = rbusProperty_GetNext(localprop);
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop)));
 
 		localprop = rbusProperty_GetNext(localprop);
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop));
+                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop)));
 
 		localprop = rbusProperty_GetNext(localprop);
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop));
+                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop)));
             }
 	    prop = rbusProperty_GetNext(prop);
     }
