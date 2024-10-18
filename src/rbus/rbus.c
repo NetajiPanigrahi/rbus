@@ -3709,7 +3709,7 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         {
                 rbusProperty_t localprop  = rbusValue_GetProperty(rbusProperty_GetValue(prop));
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %s\n", rbusValue_GetString(rbusProperty_GetValue(localprop), NULL);
+                printf("Prop Value: %s\n", rbusValue_GetString(rbusProperty_GetValue(localprop), NULL));
 		
                 localprop = rbusProperty_GetNext(localprop);
                 printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
