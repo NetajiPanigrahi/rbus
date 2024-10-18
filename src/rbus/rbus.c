@@ -3703,57 +3703,42 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 	printf("param_size: %d\n", param_size);     
     }
     prop = rbusProperty_GetNext(prop);
-    
-    if(prop)
+    while(prop)
     {
-	int size = 0;
-	char *Buffer  = (char*)rbusProperty_GetBytes(prop, &size);
-        for (int i = 0; i < size; i++)
+	if (RBUS_PROPERTY == rbusValue_GetType(rbusProperty_GetValue(prop)))
         {
-	    char name[50];
-	    bool notificationChanged;
-	    bool notification;
-	    int access;
-	    bool accessControlChanged;
-	    unsigned int accessControlBitmask;
-	    unsigned int RequesterID;
-	    	    
-	        size_t nameLength = strlen(Buffer) + 1;
-	        memcpy(name, Buffer, nameLength);
-	        Buffer += nameLength;	
-	        memcpy(&notificationChanged, Buffer, sizeof(bool));
-	        Buffer += sizeof(bool);
-	        memcpy(&notification, Buffer, sizeof(bool));
-	        Buffer += sizeof(bool);
-	        memcpy(&access, Buffer, sizeof(int));
-	        Buffer += sizeof(int);
-	        memcpy(&accessControlChanged, Buffer, sizeof(bool));
-	        Buffer += sizeof(bool);
-	        memcpy(&accessControlBitmask, Buffer, sizeof(unsigned int));
-	        Buffer += sizeof(unsigned int);
-	        memcpy(&RequesterID, Buffer, sizeof(unsigned int));
-	        Buffer += sizeof(unsigned int);
+                rbusProperty_t localprop  = rbusValue_GetProperty(rbusProperty_GetValue(prop));
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %s\n", rbusValue_GetString(rbusProperty_GetValue(localprop)), NULL);
 		
-		printf("Name[%d] : %s notificationChanged: %d notification: %d access: %d accessControlChanged: %d accessControlBitmask: %u RequesterID %u \n", i, name, notificationChanged, notification,
-			access,
-			accessControlChanged,
-			accessControlBitmask,
-			RequesterID);
-     }
- }
- 
-#if 0
-	    
-        rbusparameterAttributeStruct_t  * parameterAttribute = (rbusparameterAttributeStruct_t *)rbusProperty_GetBytes(prop, &size);
-	printf("Size: %d", size);
-	for(int i = 0; i < param_size; i++)
-        {
-            printf("Payload - Name: %s\n", parameterAttribute[i].parameterName,
-	   notificationChanged, notification,  access,	  accessControlChanged,	    accessControlBitmask,   RequesterID);
-        }
+                localprop = rbusProperty_GetNext(localprop);
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetBool(rbusProperty_GetValue(localprop)));
+		
+                localprop = rbusProperty_GetNext(localprop);
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetBool(rbusProperty_GetValue(localprop));
+
+		localprop = rbusProperty_GetNext(localprop);
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetInt32(rbusProperty_GetValue(localprop));
+
+		localprop = rbusProperty_GetNext(localprop);
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %d\n", rbusValue_GetBool(rbusProperty_GetValue(localprop));
+
+		localprop = rbusProperty_GetNext(localprop);
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop));
+
+		localprop = rbusProperty_GetNext(localprop);
+                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
+                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop));
+            }
+	    prop = rbusProperty_GetNext(prop);
     }
-#endif
-    if(outParams)
+ 
+if(outParams)
         rbusObject_Release(outParams);
     return rc;
 }
