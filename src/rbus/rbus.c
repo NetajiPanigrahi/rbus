@@ -3703,42 +3703,22 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
         param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
 	printf("param_size: %d\n", param_size);     
     }
-    prop = rbusProperty_GetNext(prop);
-    while(prop)
+
+    rbusObject_t child = rbusObject_GetChildren(outParams);
+    for (int i = 0; i < param_size; i++)
     {
-	if (RBUS_PROPERTY == rbusValue_GetType(rbusProperty_GetValue(prop)))
+        if (child)
         {
-                rbusProperty_t localprop  = rbusValue_GetProperty(rbusProperty_GetValue(prop));
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %s\n", rbusValue_GetString(rbusProperty_GetValue(localprop), NULL));
-		
-                localprop = rbusProperty_GetNext(localprop);
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop)));
-		
-                localprop = rbusProperty_GetNext(localprop);
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop)));
-
-		localprop = rbusProperty_GetNext(localprop);
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetInt32(rbusProperty_GetValue(localprop)));
-
-		localprop = rbusProperty_GetNext(localprop);
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %d\n", rbusValue_GetBoolean(rbusProperty_GetValue(localprop)));
-
-		localprop = rbusProperty_GetNext(localprop);
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop)));
-
-		localprop = rbusProperty_GetNext(localprop);
-                printf("Prop Name: %s\n", rbusProperty_GetName(localprop));
-                printf("Prop Value: %u\n", rbusValue_GetUInt32(rbusProperty_GetValue(localprop)));
-            }
-	    prop = rbusProperty_GetNext(prop);
-    }
- 
+            printf("Prop Name: %s\n", 	rbusObject_GetName(child));
+	    printf("Prop notificationChanged: %d\n", 	rbusProperty_GetBoolean(rbusObject_GetProperties(child)));
+	    printf("Prop notification: %d\n", 	rbusProperty_GetBoolean(rbusObject_GetProperties(child)));
+	    printf("Prop Access: %d\n", rbusProperty_GetInt32(rbusProperty_GetNext(prop)));
+	    printf("Prop accessControlChanged: %d\n", rbusProperty_GetBoolean(rbusProperty_GetNext(prop)));
+	    printf("Prop accessControlBitmask: %u\n", rbusProperty_GetUInt32(rbusProperty_GetNext(prop)));
+	    printf("Prop RequesterID: %u\n", rbusProperty_GetUInt32(rbusProperty_GetNext(prop)));
+        }
+        child = rbusObject_GetNext(child);
+    }	
 if(outParams)
         rbusObject_Release(outParams);
     return rc;
