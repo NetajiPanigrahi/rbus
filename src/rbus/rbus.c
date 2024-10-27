@@ -3670,16 +3670,21 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
 rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
 {
     rbusError_t rc = RBUS_ERROR_SUCCESS;
-    rbusValue_t value = NULL;
-    rbusObject_t outParams = NULL;
-    rbusProperty_t list, prop = NULL;
-    rbusValueType_t type = RBUS_NONE;
-    const char *parameterNames = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
-    for(i = 0; i < 2; i++)
+    //rbusValue_t value = NULL;
+    rbusObject_t inParams,outParams = NULL;
+    rbusProperty_t list = NULL;
+    //rbusValueType_t type = RBUS_NONE;
+    //const char *parameterNames[2] = {"Device.WiFi.SSID.1.Enable", "Device.WiFi.SSID.1.X_CISCO_COM_RouterEnabled"};
+    const char *parameterNames[1] = {"Device.WiFi.SSID."};	
+    rbusObject_Init(&inParams, NULL);
+    for(int i = 0; i < 1; i++)
     {
+	rbusProperty_t prop;
         rbusProperty_Init(&prop, parameterNames[i], NULL);
         if (list == NULL)
+	{
             list = prop;
+	}
         else
         {
             rbusProperty_Append(list, prop);
@@ -3689,39 +3694,34 @@ rbusError_t rbus_getParameterAttributesExt(rbusHandle_t handle)
     rbusObject_SetProperties(inParams,list);
     rc = rbusMethod_Invoke(handle, "eRT.com.cisco.spvtg.ccsp.wifi.GetAttributes()", inParams, &outParams);
    if(inParams)
-        rbusObject_Release(inParams);
-    if(RBUS_ERROR_SUCCESS != rc)
+        rbusObject_Release(inParams);	
+    rbusObject_fwrite(outParams, 1, stdout);	
+    rbusProperty_t prop = rbusObject_GetProperties(outParams);
+    int param_size = 0;	
+    if (prop)
     {
-        if(outParams)
-        {
-            printf("%s failed for %s with err: '%s'\n\r",cmd, method,rbusError_ToString(rc));
-            rbusObject_fwrite(outParams, 1, stdout);
-            rbusObject_Release(outParams);
-        }
-        else
-        {
-            printf("Unexpected error in handling outparams\n");
-        }
-        return;
+        param_size = rbusValue_GetInt32(rbusProperty_GetValue(prop));
+	printf("param_size: %d\n", param_size);     
     }
 
-    prop = rbusObject_GetProperties(outParams);
-    while(prop)
+    rbusObject_t child = rbusObject_GetChildren(outParams);
+    for (int i = 0; i < param_size; i++)
     {
-        value = rbusProperty_GetValue(prop);
-        if(value)
+        if (child)
         {
-            type = rbusValue_GetType(value);
-            const rbusElementAttributesInfo_t * ptr;
-            int size = 0;
-            ptr = (rbusElementAttributesInfo_t*) rbusValue_GetBytes(val, &size);
-            printf("Payload: Name: %s\n", ptr->name, getDataType_toString(type));
+            printf("Prop Name: %s\n", 	rbusObject_GetName(child));
+	    printf("Prop notificationChanged: %d\n", 	rbusProperty_GetBoolean(rbusObject_GetProperties(child)));
+	    printf("Prop notification: %d\n", 	rbusProperty_GetBoolean(rbusObject_GetProperties(child)));
+	    printf("Prop Access: %d\n", rbusProperty_GetInt32(rbusProperty_GetNext(prop)));
+	    printf("Prop accessControlChanged: %d\n", rbusProperty_GetBoolean(rbusProperty_GetNext(prop)));
+	    printf("Prop accessControlBitmask: %u\n", rbusProperty_GetUInt32(rbusProperty_GetNext(prop)));
+	    printf("Prop RequesterID: %u\n", rbusProperty_GetUInt32(rbusProperty_GetNext(prop)));
         }
-        prop = rbusProperty_GetNext(prop);
-    }
-
-    if(outParams)
+        child = rbusObject_GetNext(child);
+    }	
+if(outParams)
         rbusObject_Release(outParams);
+    return rc;
 }
 
 #if 0
@@ -4871,7 +4871,7 @@ rbusError_t rbusElementInfo_free(
     }
     return RBUS_ERROR_SUCCESS;
 }
-
+#if 0
 rbusError_t rbusElementAttributesInfo_free(
     rbusHandle_t handle, 
     rbusElementAttributesInfo_t* elemInfo)
@@ -4892,7 +4892,7 @@ rbusError_t rbusElementAttributesInfo_free(
     }
     return RBUS_ERROR_SUCCESS;
 }
-
+#endif
 
 //************************** Events ****************************//
 
