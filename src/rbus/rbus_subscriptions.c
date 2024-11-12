@@ -50,14 +50,20 @@ static int subscriptionKeyCompare(rbusSubscription_t* subscription, char const* 
     int rc;
     if((rc = strcmp(subscription->listener, listener)) == 0)
     {
+        RBUSLOG_INFO("%s:found Listener:%s", __func__, listener);
         if(subscription->componentId == componentId)
         {
+            RBUSLOG_INFO("%s: found ComponentId:%d", __func__, componentId);
             if((rc = strcmp(subscription->eventName, eventName)) == 0)
             {
+                RBUSLOG_INFO("%s : found event name :%s", __func__, eventName);
                 if ((rc = rbusFilter_Compare(subscription->filter, filter)) == 0)
                 {
-                    rc = ((subscription->interval == interval) &&
+                   RBUSLOG_INFO("%s: found filter", __func__);
+                   rc = ((subscription->interval == interval) &&
                             (subscription->duration == duration) && (subscription->rawData == rawData)) ? 0 : 1;
+                   RBUSLOG_INFO("%s: rc value = %d", __func__, rc);
+
                 }
             }
         }
@@ -66,6 +72,7 @@ static int subscriptionKeyCompare(rbusSubscription_t* subscription, char const* 
         else
             rc = 1;
     }
+    RBUSLOG_INFO("%s(): line: %d: rc value = %d", __func__, __LINE__, rc);
     return rc;
 }
 
@@ -170,7 +177,7 @@ rbusSubscription_t* rbusSubscriptions_getSubscription(rbusSubscriptions_t subscr
     rtListItem item;
     rbusSubscription_t* sub;
 
-    RBUSLOG_DEBUG("searching for %s %s", listener, eventName);
+    RBUSLOG_INFO("searching for %s %s", listener, eventName);
 
     if(!subscriptions)
         return NULL;
@@ -183,11 +190,11 @@ rbusSubscription_t* rbusSubscriptions_getSubscription(rbusSubscriptions_t subscr
 
         if(!sub)
             return NULL;
-        RBUSLOG_DEBUG("comparing to %s %s", sub->listener, sub->eventName);
+        RBUSLOG_INFO("comparing to %s %s", sub->listener, sub->eventName);
 
         if(subscriptionKeyCompare(sub, listener, componentId, eventName, filter, interval, duration, rawData) == 0)
         {
-            RBUSLOG_DEBUG("found sub %s %s %d", listener, eventName, componentId);
+            RBUSLOG_INFO("found sub %s %s %d", listener, eventName, componentId);
             return sub;
         }
         rtListItem_GetNext(item, &item);
