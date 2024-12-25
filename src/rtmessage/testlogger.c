@@ -5,15 +5,15 @@
 #include <unistd.h>
 #include <sys/types.h>
 
-#define rtLog_WarnPrint(mod,FORMAT...)   rtLogPrintf(RT_LOG_WARN, mod, __FILE__, __LINE__, FORMAT)
-#define rtLog_ErrorPrint(mod,FORMAT...)  rtLogPrintf(RT_LOG_ERROR, mod, __FILE__, __LINE__, FORMAT)
-#define rtLog_FatalPrint(mod,FORMAT...)  rtLogPrintf(RT_LOG_FATAL, mod, __FILE__, __LINE__, FORMAT)
+#define testLog_WarnPrint(mod,FORMAT...)   rtLogPrintf(RT_LOG_WARN, mod, __FILE__, __LINE__, FORMAT)
+#define testLog_ErrorPrint(mod,FORMAT...)  rtLogPrintf(RT_LOG_ERROR, mod, __FILE__, __LINE__, FORMAT)
+#define testLog_FatalPrint(mod,FORMAT...)  rtLogPrintf(RT_LOG_FATAL, mod, __FILE__, __LINE__, FORMAT)
   
-#define rtLog_Debug(FORMAT,...) rtLog_DebugPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
-#define rtLog_Info(FORMAT,...)  rtLog_InfoPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
-#define rtLog_Warn(FORMAT,...)  rtLog_WarnPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
-#define rtLog_Error(FORMAT,...) rtLog_ErrorPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
-#define rtLog_Fatal(FORMAT,...) rtLog_FatalPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
+#define testLog_Debug(FORMAT,...) testLog_DebugPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
+#define testLog_Info(FORMAT,...)  testLog_InfoPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
+#define testLog_Warn(FORMAT,...)  testLog_WarnPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
+#define testLog_Error(FORMAT,...) testLog_ErrorPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
+#define testLog_Fatal(FORMAT,...) testLog_FatalPrint("TESTLOGGER",FORMAT"\n", ##__VA_ARGS__)
 int main(int argc, char * argv[])
 {
   rdk_logger_init("/etc/debug.ini");
@@ -21,6 +21,6 @@ int main(int argc, char * argv[])
   rtLogSetLogHandler(NULL);
   while(1) {
       sleep(10);
-      rtLog_Error("TEST Message...%ld: %ld", (long)getpid(), (long)getppid());
+     testLog_Error("TEST Message...%ld: %ld", (long)getpid(), (long)getppid());
   }
 }
