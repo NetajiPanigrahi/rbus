@@ -124,7 +124,7 @@ endif (ENABLE_RDKLOGGER)
     add_dependencies(rtrouted_diag rtMessage)
     target_link_libraries(rtrouted_diag rtMessage)
 
-    install (TARGETS rtMessage rtrouted rtrouted_diag RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
+    install (TARGETS rtMessage rtrouted rtrouted_diag testlogger RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR} LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR})
 endif (BUILD_RBUS_DAEMON)
 
 
