@@ -4,7 +4,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <sys/types.h>
-#include "rtDebug.h"
+#include "rdk_debug.h"
 
 #define testLog_WarnPrint(mod,FORMAT...)   rtLogPrintf(RT_LOG_WARN, mod, __FILE__, __LINE__, FORMAT)
 #define testLog_ErrorPrint(mod,FORMAT...)  rtLogPrintf(RT_LOG_ERROR, mod, __FILE__, __LINE__, FORMAT)
