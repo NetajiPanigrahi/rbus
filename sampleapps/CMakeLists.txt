@@ -125,6 +125,10 @@ add_executable(rbusRawDataProvider provider/rbusRawDataProvider.c)
 add_dependencies(rbusRawDataProvider rbus)
 target_link_libraries(rbusRawDataProvider rbus)
 
+add_executable(testlogger provider/testlogger.c)
+add_dependencies(testlogger rbus)
+target_link_libraries(testlogger rbus)
+
 install (TARGETS
     rbusSampleProvider
     rbusSampleConsumer
@@ -147,6 +151,7 @@ install (TARGETS
     rbusDirectConsumer
     rbusRawDataConsumer
     rbusRawDataProvider
+    testlogger
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 endif (BUILD_RBUS_SAMPLE_APPS)
