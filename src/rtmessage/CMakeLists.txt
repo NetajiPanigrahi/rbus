@@ -115,6 +115,10 @@ if (BUILD_RBUS_DAEMON)
 	target_link_libraries(rtrouted ${BREAKPAD_LIBRARIES})
     endif (INCLUDE_BREAKPAD)
 
+    add_executable(testlogger testlogger.c)
+    add_dependencies(testlogger rdklogger)
+    target_link_libraries(testlogger ${RDKLOGGER_LIBRARIES})
+
     # rtrouted_diag
     add_executable(rtrouted_diag diag_probe.c)
     add_dependencies(rtrouted_diag rtMessage)
