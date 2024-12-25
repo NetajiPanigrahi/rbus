@@ -147,7 +147,6 @@ install (TARGETS
     rbusDirectConsumer
     rbusRawDataConsumer
     rbusRawDataProvider
-    testlogger
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 endif (BUILD_RBUS_SAMPLE_APPS)
