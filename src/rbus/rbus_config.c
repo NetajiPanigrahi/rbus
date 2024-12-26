@@ -33,9 +33,11 @@
 #define RBUS_GET_DEFAULT_TIMEOUT 15000      /* default timeout in miliseconds for GET API */
 #define RBUS_GET_WILDCARD_DEFAULT_TIMEOUT 120000 /* default timeout in miliseconds for Wildcard GET API */
 #define RBUS_SET_DEFAULT_TIMEOUT 15000      /* default timeout in miliseconds for SET API */
+#define RBUS_SET_MULTI_DEFAULT_TIMEOUT 120000   /* default timeout in miliseconds for SET MULTI API */
 #define RBUS_GET_TIMEOUT_OVERRIDE "/tmp/rbus_timeout_get"
 #define RBUS_GET_WILDCARD_TIMEOUT_OVERRIDE "/tmp/rbus_timeout_get_wildcard_query"
 #define RBUS_SET_TIMEOUT_OVERRIDE "/tmp/rbus_timeout_set"
+#define RBUS_SET_MULTI_TIMEOUT_OVERRIDE "/tmp/rbus_timeout_set_multi"
 #define RBUS_GET_DEFAULT_TIMEOUT_FOR_WILDCARD 60000 /* default timeout in miliseconds for GET API wildcard query*/
 
 #define initStr(P,N) \
@@ -69,6 +71,7 @@ void rbusConfig_CreateOnce()
     initInt(gConfig->valueChangePeriod,     RBUS_VALUECHANGE_PERIOD);
     initInt(gConfig->getTimeout,            RBUS_GET_DEFAULT_TIMEOUT);
     initInt(gConfig->setTimeout,            RBUS_SET_DEFAULT_TIMEOUT);
+    initInt(gConfig->setMultiTimeout,       RBUS_SET_MULTI_DEFAULT_TIMEOUT);
     initInt(gConfig->getWildcardTimeout,    RBUS_GET_WILDCARD_DEFAULT_TIMEOUT);
 }
 
@@ -150,4 +153,25 @@ int rbusConfig_ReadSetTimeout()
     }
     rbusConfig_CreateOnce();
     return gConfig->setTimeout;
+}
+
+int rbusConfig_ReadSetMultiTimeout()
+{
+    int timeout = 0;
+    FILE *fp = NULL;
+    char buf[25] = {0};
+
+    if (access(RBUS_SET_MULTI_TIMEOUT_OVERRIDE, F_OK) == 0)
+    {
+        fp = fopen(RBUS_SET_MULTI_TIMEOUT_OVERRIDE, "r");
+        if(fp != NULL) {
+            if (fread(buf, 1, sizeof(buf), fp) > 0)
+                timeout = atoi(buf);
+            fclose(fp);
+        }
+        if (timeout > 0)
+            return timeout * 1000;
+    }
+    rbusConfig_CreateOnce();
+    return gConfig->setMultiTimeout;
 }
