@@ -34,6 +34,7 @@ typedef struct _rbusConfig_t
     int             valueChangePeriod;  /* polling period for valuechange detector in miliseconds*/
     int             getTimeout;         /* default timeout in miliseconds for GET API*/
     int             setTimeout;         /* default timeout in miliseconds for SET API*/
+    int             setMultiTimeout;    /* default timeout in miliseconds for SET MULTI API*/
     int             getWildcardTimeout; /* default timeout in miliseconds for Wildcard Query GET API*/
 } rbusConfig_t;
 
@@ -43,6 +44,7 @@ rbusConfig_t* rbusConfig_Get();
 int rbusConfig_ReadGetTimeout();
 int rbusConfig_ReadWildcardGetTimeout();
 int rbusConfig_ReadSetTimeout();
+int rbusConfig_ReadSetMultiTimeout();
 
 #ifdef __cplusplus
 }
