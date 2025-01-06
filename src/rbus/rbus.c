@@ -3836,7 +3836,7 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
 
     timeout = rbusConfig_ReadSetTimeout();
     if ((opts) && (opts->timeout > 0))
-        timeout = (int *)(opts->timeout);
+        timeout = (int)(opts->timeout);
 
     /* Set the Component name that invokes the set */
     rbusMessage_SetString(setRequest, handleInfo->componentName);
@@ -3912,7 +3912,7 @@ rbusError_t rbus_setCommit(rbusHandle_t handle, char const* name, rbusSetOptions
 
     timeout = rbusConfig_ReadSetTimeout();
     if ((opts) && (opts->timeout > 0))
-        timeout = (int *)(opts->timeout);
+        timeout = (int)(opts->timeout);
 
     /* Set the Component name that invokes the set */
     rbusMessage_SetString(setRequest, handleInfo->componentName);
@@ -3978,7 +3978,7 @@ rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t prop
 
     timeout = rbusConfig_ReadSetTimeout();
     if ((opts) && (opts->timeout > 0))
-        timeout = (int *)(opts->timeout);
+        timeout = (int)(opts->timeout);
     if (numProps > 0 && properties != NULL)
     {
         char const** pParamNames;
