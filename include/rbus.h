@@ -152,6 +152,9 @@ typedef struct _rbusSetOptions
                                  value should be "remembered" temporarily. Only when the "commit" parameter
                                  is "true", should all remembered parameters in this session be set together.
                                  Call rbus_createSession to generate a session id.*/
+    uint32_t timeout        /**< timeout  set function will block (up to 'timeout') until remote end 
+                                 responds with a success or failure.If the timeout is equal to zero, timeout
+                                 will be set to default. */
 } rbusSetOptions_t;
 
 /** @struct     rbusGetHandlerOptions_t

@@ -3814,6 +3814,7 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
     VERIFY_HANDLE(handle);
     rbusMessage setRequest, setResponse;
     struct _rbusHandle* handleInfo = (struct _rbusHandle*) handle;
+    int timeout = 0;
 
     VERIFY_NULL(handle);
     VERIFY_NULL(name);
@@ -3833,6 +3834,10 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
     else
         rbusMessage_SetInt32(setRequest, 0);
 
+    timeout = rbusConfig_ReadSetTimeout();
+    if ((opts) && (opts->timeout > 0))
+        timeout = (int *)opts->timeout;
+
     /* Set the Component name that invokes the set */
     rbusMessage_SetString(setRequest, handleInfo->componentName);
     /* Set the Size of params */
@@ -3849,7 +3854,7 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
     if (NULL == myConn)
         myConn = handleInfo->m_connection;
 
-    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_SETPARAMETERVALUES, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
+    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_SETPARAMETERVALUES, setRequest, timeout, &setResponse)) != RBUSCORE_SUCCESS)
     {
         RBUSLOG_ERROR("set by %s failed; Received error %d from RBUS Daemon for the object %s", handle->componentName, err, name);
         errorcode = rbusCoreError_to_rbusError(err);
@@ -3894,6 +3899,7 @@ rbusError_t rbus_setCommit(rbusHandle_t handle, char const* name, rbusSetOptions
     rbusError_t errorcode = RBUS_ERROR_INVALID_INPUT;
     rbusCoreError_t err = RBUSCORE_SUCCESS;
     rbusMessage setRequest, setResponse;
+    int timeout = 0;
     struct _rbusHandle* handleInfo = (struct _rbusHandle*) handle;
     if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
         return RBUS_ERROR_INVALID_HANDLE;
@@ -3903,6 +3909,10 @@ rbusError_t rbus_setCommit(rbusHandle_t handle, char const* name, rbusSetOptions
         rbusMessage_SetInt32(setRequest, opts->sessionId);
     else
         rbusMessage_SetInt32(setRequest, 0);
+
+    timeout = rbusConfig_ReadSetTimeout();
+    if ((opts) && (opts->timeout > 0))
+        timeout = (int *)opts->timeout;
 
     /* Set the Component name that invokes the set */
     rbusMessage_SetString(setRequest, handleInfo->componentName);
@@ -3916,7 +3926,7 @@ rbusError_t rbus_setCommit(rbusHandle_t handle, char const* name, rbusSetOptions
     rtConnection myConn = rbuscore_FindClientPrivateConnection(name);
     if (NULL == myConn)
         myConn = handleInfo->m_connection;
-    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_COMMIT, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
+    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_COMMIT, setRequest, timeout, &setResponse)) != RBUSCORE_SUCCESS)
     {
         RBUSLOG_ERROR("set commit by %s failed; Received error %d from RBUS Daemon for the object %s", handle->componentName, err, name);
         errorcode = rbusCoreError_to_rbusError(err);
@@ -3959,12 +3969,16 @@ rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t prop
     struct _rbusHandle* handleInfo = (struct _rbusHandle*) handle;
     rbusValueType_t type = RBUS_NONE;
     rbusProperty_t current;
+    int timeout = 0;
 
     VERIFY_NULL(handle);
 
     if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
         return RBUS_ERROR_INVALID_HANDLE;
 
+    timeout = rbusConfig_ReadSetTimeout();
+    if ((opts) && (opts->timeout > 0))
+        timeout = (int *)opts->timeout;
     if (numProps > 0 && properties != NULL)
     {
         char const** pParamNames;
@@ -4087,7 +4101,7 @@ rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t prop
                     /* Set the Commit value; FIXME: Should we use string? */
                     rbusMessage_SetString(setRequest, (!opts || opts->commit) ? "TRUE" : "FALSE");
 
-                    if((err = rbus_invokeRemoteMethod(firstParamName, METHOD_SETPARAMETERVALUES, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
+                    if((err = rbus_invokeRemoteMethod(firstParamName, METHOD_SETPARAMETERVALUES, setRequest, timeout, &setResponse)) != RBUSCORE_SUCCESS)
                     {
                         RBUSLOG_ERROR("set by %s failed; Received error %d from RBUS Daemon for the object %s", handle->componentName, err, firstParamName);
                         errorcode = rbusCoreError_to_rbusError(err);
