@@ -3439,115 +3439,131 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
     if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
         return RBUS_ERROR_INVALID_HANDLE;
 
-    if ((1 == paramCount) && (_is_wildcard_query(pParamNames[0])))
+    if (1 == paramCount) 
     {
-        int numDestinations = 0;
-        char** destinations;
-        //int length = strlen(pParamNames[0]);
-
-        err = rbus_discoverWildcardDestinations(pParamNames[0], &numDestinations, &destinations);
-        if (RBUSCORE_SUCCESS == err)
+        if (!_is_wildcard_query(pParamNames[0]))
         {
-            RBUSLOG_DEBUG("Query for expression %s was successful. See result below:", pParamNames[0]);
-            rbusProperty_t last = NULL;
-            *numValues = 0;
-            if (0 == numDestinations)
+            rbusProperty_t outputVals = NULL;
+            rbusValue_t getVal;
+            errorcode = rbus_get(handle, pParamNames[0], &getVal);
+            if(RBUS_ERROR_SUCCESS == errorcode)
             {
-                RBUSLOG_DEBUG("It is possibly a table entry from single component.");
-            }
-            else
-            {
-                for(i = 0; i < numDestinations; i++)
-                {
-                    int tmpNumOfValues = 0;
-                    rbusMessage request, response;
-                    RBUSLOG_DEBUG("Destination %d is %s", i, destinations[i]);
-
-                    /* Get the query sent to each component identified */
-                    rbusMessage_Init(&request);
-                    /* Set the Component name that invokes the set */
-                    rbusMessage_SetString(request, handleInfo->componentName);
-                    rbusMessage_SetInt32(request, 1);
-                    rbusMessage_SetString(request, pParamNames[0]);
-                    /* Invoke the method */
-                    err = rbus_invokeRemoteMethod(destinations[i], METHOD_GETPARAMETERVALUES,
-                            request, rbusConfig_ReadWildcardGetTimeout(), &response);
-
-                    if(err != RBUSCORE_SUCCESS)
-                    {
-                        RBUSLOG_ERROR("get by %s failed; Received error %d from RBUS Daemon for the object %s", handle->componentName, err, destinations[i]);
-                        errorcode = rbusCoreError_to_rbusError(err);
-                    }
-                    else
-                    {
-                        if (0 == i)
-                        {
-                            if((errorcode = _getExt_response_parser(response, &tmpNumOfValues, retProperties)) != RBUS_ERROR_SUCCESS)
-                            {
-                                RBUSLOG_ERROR("error parsing response %d", errorcode);
-                            }
-                            else
-                            {
-                                if(tmpNumOfValues > 0)
-                                    last = *retProperties;
-                            }
-                        }
-                        else
-                        {
-                            rbusProperty_t tmpProperties = NULL;
-
-                            if((errorcode = _getExt_response_parser(response, &tmpNumOfValues, &tmpProperties)) != RBUS_ERROR_SUCCESS)
-                            {
-                                RBUSLOG_ERROR("error parsing response %d", errorcode);
-                            }
-                            else
-                            {
-                                if(tmpNumOfValues > 0 && tmpProperties)
-                                {
-                                    if(NULL != last)
-                                    {
-                                        rbusProperty_Append(last, tmpProperties);
-                                    }
-                                    else
-                                    {
-                                        last = tmpProperties;
-                                        *retProperties = last;
-                                    }
-                                }
-                            }
-                            rbusProperty_Release(tmpProperties);
-                        }
-                    }
-                    if (errorcode != RBUS_ERROR_SUCCESS)
-                    {
-                        RBUSLOG_WARN("Failed to get the data from %s Component", destinations[i]);
-                        break;
-                    }
-                    else
-                    {
-                        *numValues += tmpNumOfValues;
-                    }
-                }
-
-                for(i = 0; i < numDestinations; i++)
-                    free(destinations[i]);
-                free(destinations);
-                if ((*retProperties != NULL) && (errorcode != RBUS_ERROR_SUCCESS))
-                {
-                    RBUSLOG_WARN("Query for expression %s was partially successful", pParamNames[0]);
-                    return RBUS_ERROR_SUCCESS;
-                }
-                else 
-                {
-                    return errorcode;
-                }
-
+                *numValues = 1;
+                rbusProperty_Init(&outputVals, pParamNames[0], getVal);
+                rbusValue_Release(getVal);
+                *retProperties = outputVals;
             }
         }
         else
         {
-            RBUSLOG_DEBUG("Query for expression %s was not successful.", pParamNames[0]);
-            return RBUS_ERROR_ELEMENT_DOES_NOT_EXIST;
+            int numDestinations = 0;
+            char** destinations;
+            //int length = strlen(pParamNames[0]);
+
+            err = rbus_discoverWildcardDestinations(pParamNames[0], &numDestinations, &destinations);
+            if (RBUSCORE_SUCCESS == err)
+            {
+                RBUSLOG_DEBUG("Query for expression %s was successful. See result below:", pParamNames[0]);
+                rbusProperty_t last = NULL;
+                *numValues = 0;
+                if (0 == numDestinations)
+                {
+                    RBUSLOG_DEBUG("It is possibly a table entry from single component.");
+                }
+                else
+                {
+                    for(i = 0; i < numDestinations; i++)
+                    {
+                        int tmpNumOfValues = 0;
+                        rbusMessage request, response;
+                        RBUSLOG_DEBUG("Destination %d is %s", i, destinations[i]);
+
+                        /* Get the query sent to each component identified */
+                        rbusMessage_Init(&request);
+                        /* Set the Component name that invokes the set */
+                        rbusMessage_SetString(request, handleInfo->componentName);
+                        rbusMessage_SetInt32(request, 1);
+                        rbusMessage_SetString(request, pParamNames[0]);
+                        /* Invoke the method */
+                        err = rbus_invokeRemoteMethod(destinations[i], METHOD_GETPARAMETERVALUES,
+                            request, rbusConfig_ReadWildcardGetTimeout(), &response);
+
+                        if(err != RBUSCORE_SUCCESS)
+                        {
+                            RBUSLOG_ERROR("get by %s failed; Received error %d from RBUS Daemon for the object %s", handle->componentName, err, destinations[i]);
+                            errorcode = rbusCoreError_to_rbusError(err);
+                        }
+                        else
+                        {
+                            if (0 == i)
+                            {
+                                if((errorcode = _getExt_response_parser(response, &tmpNumOfValues, retProperties)) != RBUS_ERROR_SUCCESS)
+                                {
+                                    RBUSLOG_ERROR("error parsing response %d", errorcode);
+                                }
+                                else
+                                {
+                                    if(tmpNumOfValues > 0)
+                                        last = *retProperties;
+                                }
+                            }
+                            else
+                            {
+                                rbusProperty_t tmpProperties = NULL;
+
+                                if((errorcode = _getExt_response_parser(response, &tmpNumOfValues, &tmpProperties)) != RBUS_ERROR_SUCCESS)
+                                {
+                                    RBUSLOG_ERROR("error parsing response %d", errorcode);
+                                }
+                                else
+                                {
+                                    if(tmpNumOfValues > 0 && tmpProperties)
+                                    {
+                                        if(NULL != last)
+                                        {
+                                            rbusProperty_Append(last, tmpProperties);
+                                        }
+                                        else
+                                        {
+                                            last = tmpProperties;
+                                            *retProperties = last;
+                                        }
+                                    }
+                                }
+                                rbusProperty_Release(tmpProperties);
+                            }
+                        }
+                        if (errorcode != RBUS_ERROR_SUCCESS)
+                        {
+                            RBUSLOG_WARN("Failed to get the data from %s Component", destinations[i]);
+                            break;
+                        }
+                        else
+                        {
+                            *numValues += tmpNumOfValues;
+                        }
+                    }
+
+                    for(i = 0; i < numDestinations; i++)
+                        free(destinations[i]);
+                    free(destinations);
+                    if ((*retProperties != NULL) && (errorcode != RBUS_ERROR_SUCCESS))
+                    {
+                        RBUSLOG_WARN("Query for expression %s was partially successful", pParamNames[0]);
+                        return RBUS_ERROR_SUCCESS;
+                    }
+                    else 
+                    {
+                        return errorcode;
+                    }
+
+                }
+            }
+            else
+            {
+                RBUSLOG_DEBUG("Query for expression %s was not successful.", pParamNames[0]);
+                return RBUS_ERROR_ELEMENT_DOES_NOT_EXIST;
+            }
         }
     }
 
