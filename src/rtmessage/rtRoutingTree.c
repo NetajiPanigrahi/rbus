@@ -48,7 +48,7 @@ static char workBuffer[512];
 static Token workTokens[32];
 static int workTokenCount = 0;
 
-static int rtList_ComparePointer(const void *left, const void *right)
+int rtList_ComparePointer(const void *left, const void *right)
 {
   return !(left == right);
 }
@@ -84,6 +84,17 @@ static rtTreeTopic* createTreeTopic(const char* name, rtTreeTopic* parent)
     return treeTopic;
 }
 
+static void freeTreeTopicRoutes(void* p)
+{
+    rtTreeTopic* treeTopic = p;
+    if(treeTopic->childList)
+        rtList_Destroy(treeTopic->childList, freeTreeTopicRoutes);
+    if(treeTopic->routeList)
+        rtList_Destroy(treeTopic->routeList, NULL);
+    if(treeTopic->routeList2)
+        rtList_Destroy(treeTopic->routeList2, NULL);
+}
+
 static void freeTreeTopic(void* p)
 {
     rtTreeTopic* treeTopic = p;
@@ -93,6 +104,8 @@ static void freeTreeTopic(void* p)
         rtList_Destroy(treeTopic->routeList, NULL);
     if(treeTopic->routeList2)
         rtList_Destroy(treeTopic->routeList2, NULL);
+     if(treeTopic->notifyList)
+        rtList_Destroy(treeTopic->notifyList, NULL);
     if(treeTopic->name)
         free(treeTopic->name);
     if(treeTopic->fullName)
@@ -174,13 +187,19 @@ static rtTreeTopic* getChildByName(rtRoutingTree rt, rtTreeTopic* parent, const 
         if(strcmp(treeTopic->name, name) == 0)
         {
             /* we can remove if its an exact match*/
+            size_t numRoutes, numNotifyRoutes = 0;
+            rtList_GetSize(treeTopic->notifyList, &numNotifyRoutes);
+            rtList_GetSize(treeTopic->routeList, &numRoutes);
+            rtLog_Info(">>> %s: %s numRoutes: %ld, numNotifyRoutes:%ld", __FUNCTION__, treeTopic->fullName, numRoutes, numNotifyRoutes);
+
             if(remove)
             {
-              removeTopicFromRoutes(rt, treeTopic);
-              rtList_RemoveItem(parent->childList, item, freeTreeTopic);
-              return NULL;
+                rtLog_Info(">>> @@@@ REMOVE @@@%s: %s", __FUNCTION__, treeTopic->fullName);
+                removeTopicFromRoutes(rt, treeTopic);
+                rtList_RemoveItem(parent->childList, item, freeTreeTopicRoutes);
+                return NULL;
             }
-            return treeTopic;
+	    return treeTopic;
         }
         /* if a query contains a row instance id, a square bracket alias, or wildcard * 
            we need to match any curly brace i table name.  
@@ -198,6 +217,7 @@ static rtTreeTopic* getChildByName(rtRoutingTree rt, rtTreeTopic* parent, const 
         {
             /* note that we don't handle the remove flag here because you should never create or remove instance ids themselves in the tree
                however, as a safeguard we only do remove in the above branch when name is an exact match*/
+            rtLog_Debug("$$$$$%s: TABLE $$$$$ ", __FUNCTION__);
             return treeTopic;
         }
         /* Registration of property element as sibling to a table and vice versa not supported as per TR369/TR181 standard.*/
@@ -294,6 +314,7 @@ static void removeRouteFromTopicTree(rtRoutingTree rt, rtTreeTopic* treeTopic, r
         size_t numChildren=0;
         size_t numRoutes=0;
         size_t numRoutes2=0;
+        size_t numNotifyRoutes = 0;
 
         rtListItem_GetData(childItem, (void**)&child);
 
@@ -309,9 +330,16 @@ static void removeRouteFromTopicTree(rtRoutingTree rt, rtTreeTopic* treeTopic, r
           rtList_RemoveItemByCompare(child->routeList2, route, rtList_ComparePointer, NULL);
           rtList_GetSize(child->routeList2, &numRoutes2);
         }
+
+        if(child->notifyList)
+        {
+            rtLog_Info(">>> @@@@ REMOVED from notify list @@@%s:", __FUNCTION__);
+            rtList_RemoveItemByCompare(child->notifyList, route, rtList_ComparePointer, NULL);
+            rtList_GetSize(child->notifyList, &numNotifyRoutes);
+        }
         rtList_GetSize(child->childList, &numChildren);
         rtListItem_GetNext(childItem, &next);
-        if(numChildren == 0 && numRoutes == 0)
+        if(numChildren == 0 && numRoutes == 0 && numNotifyRoutes == 0)
         {
             rtList_RemoveItem(treeTopic->childList, childItem, freeTreeTopic);
         }/*
@@ -442,7 +470,7 @@ void rtRoutingTree_Destroy(rtRoutingTree rt)
     free(rt);
 }
 
-rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topicPath, const void* routeData, int err_on_dup)
+rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topicPath, const void* routeData, int err_on_dup, int add_notify_route)
 {
     rtError rc = RT_OK;
     int i;
@@ -456,6 +484,7 @@ rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topicPath, con
     if(workTokenCount == 0)
         return rc;
 
+    rtLog_Info(">>> rtList_PushBack %s: %s, RouteDATA=[%p]", __FUNCTION__, topicPath, routeData);
     route = getTreeRoute(rt, routeData, NULL);
     if(!route)
     {
@@ -463,7 +492,10 @@ rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topicPath, con
         route->route = (void*)routeData;
         rtList_Create(&route->topicList);
         rtList_PushBack(rt->routeList, route, NULL);
+        rtLog_Info(">>> rtList_PushBack %s: %s, Route=[%p]", __FUNCTION__, topicPath, route);
     }
+
+    rtLog_Info(">>> %s: %s, Route=[%p]", __FUNCTION__, topicPath, route);
 
     int isCreated = 0;
     int error = 0;
@@ -476,24 +508,79 @@ rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topicPath, con
             return RT_ERROR_PROTOCOL_ERROR;
         }
     }
-
-    if (err_on_dup && (0 == isCreated) && (topic->routeList) && (0 != strcmp (topicPath, "_RTROUTED.ADVISORY")))
+    size_t numRoutes = 0;
+    rtList_GetSize(topic->routeList, &numRoutes);
+    rtLog_Info("@@@@@ >>> %s() Route=[%p] , size: %ld", __func__, route, numRoutes);
+    //if (err_on_dup && (0 == isCreated) && (topic->routeList) && (0 != strcmp (topicPath, "_RTROUTED.ADVISORY")))
+    if (err_on_dup && (0 == isCreated) && (numRoutes) && (0 != strcmp (topicPath, "_RTROUTED.ADVISORY")))
     {
         /* Controlled Error log will be printed in rtrouted */
         rtLog_Debug("Rejecting a duplicate registraion");
         return RT_ERROR_DUPLICATE_ENTRY;
     }
 
-    if(!topic->routeList)
-        rtList_Create(&topic->routeList);
+    if (add_notify_route)
+    {
+        rtLog_Info("%s() Topic:%s", __func__, topic->fullName);
+        if(!topic->notifyList)
+            rtList_Create(&topic->notifyList);
+        rtList_PushBack(topic->notifyList, route, NULL);
+        size_t numNotifyRoutes = 0;
+        rtList_GetSize(topic->notifyList, &numNotifyRoutes);
+        rtLog_Info("@@@@@ >>> %s() Added Route=[%p] to notify_List, size: %ld", __func__, route, numNotifyRoutes);
+    }
+    else
+    {
+        if(!topic->routeList)
+            rtList_Create(&topic->routeList);
+        rtList_PushBack(topic->routeList, route, NULL);
+        numRoutes = 0;
+        rtList_GetSize(topic->routeList, &numRoutes);
+        rtLog_Info("%s() Topic:%s RouteList Size: %ld", __func__, topic->fullName, numRoutes);
 
-    rtList_PushBack(topic->routeList, route, NULL);
+        addPointerToListOnce(route->topicList, topic);
 
-    addPointerToListOnce(route->topicList, topic);
-
-    if(topic->parent->parent)
-        optimizeTopicsBackpropagate(topic->parent, route);
+        if(topic->parent->parent)
+            optimizeTopicsBackpropagate(topic->parent, route);
+    }
     return RT_OK;
+}
+
+void rtRoutingTree_GetTopicNotifyRoutes(rtRoutingTree rt, const char* topic, rtList* routes)
+{
+    int i;
+    *routes = NULL;
+    rtTreeTopic* treeTopic = rt->topicRoot;
+
+    rtLog_Debug("%s: %s", __FUNCTION__, topic);
+
+    tokenizeExpression(topic);
+    if(workTokenCount == 0)
+        return;
+
+    for(i = 0; i < workTokenCount; ++i)
+    {
+        treeTopic = getChildByName(rt, treeTopic, workTokens[i].name, 0, NULL, NULL, 0);
+        if(!treeTopic)
+            return;
+    }
+    if(treeTopic->isTable)
+    {
+        rtTreeTopic* curlyChild = getChildByName(rt, treeTopic, "{i}", 0, NULL, NULL, 0);
+        if(curlyChild)
+        {
+            *routes = curlyChild->notifyList;
+        }
+    }
+    else
+    {
+        /*If its not a partial path then return the routes listening to the topic*/
+        if (treeTopic->notifyList == NULL)
+            rtLog_Debug("$$$$$%s: treeTopic->notifyList is NULL", __FUNCTION__);
+
+        *routes = treeTopic->notifyList;
+        rtLog_Debug("$$$$$%s: %s %p", __FUNCTION__, topic, *routes);
+    }
 }
 
 void rtRoutingTree_GetTopicRoutes(rtRoutingTree rt, const char* topic, rtList* routes)
@@ -575,6 +662,7 @@ void rtRoutingTree_GetTopicRoutes(rtRoutingTree rt, const char* topic, rtList* r
           So we need to search for the "{i}" child here and use its route.
         */
         rtTreeTopic* curlyChild = getChildByName(rt, treeTopic, "{i}", 0, NULL, NULL, 0);
+        rtLog_Debug("$$$$$%s: TABLE $$$$$ ", __FUNCTION__);
         if(curlyChild)
         {
           *routes = curlyChild->routeList;

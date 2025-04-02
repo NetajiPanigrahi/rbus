@@ -72,7 +72,7 @@ private:
     std::string s = topic.str();
 
     rtLog_Debug("register provider with topic:%s", s.c_str());
-    rtError e = rtConnection_AddListener(m_con, s.c_str(), &dmProviderHostImpl::requestHandler, this);
+    rtError e = rtConnection_AddListener(m_con, s.c_str(), &dmProviderHostImpl::requestHandler, this, false);
     if (e != RT_OK)
     {
       rtLog_Warn("failed to register provider listener. %s", rtStrError(e));

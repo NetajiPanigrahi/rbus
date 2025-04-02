@@ -170,7 +170,7 @@ static int rbus_recv(const char *topic, pid_t pid, int *rbus_send_status, rbusGt
   userData.test = test;
   strcpy(userData.componentName, componentName);
 
-  ret |= rbusMessage_AddListener(handle, topic, &rbusRecvHandler, (void *)(&userData), 0);
+  ret |= rbusMessage_AddListener(handle, topic, &rbusRecvHandler, (void *)(&userData), 0, false);
   EXPECT_EQ(ret,RBUS_ERROR_SUCCESS);
 
   if(rbus_send_status) {
@@ -266,7 +266,7 @@ static int rbus_single_recv(const char *topic, pid_t pid, rbusGtestMsg_t test)
   userData.cond = NULL;
   strcpy(userData.componentName, componentName);
 
-  ret |= rbusMessage_AddListener(handle, topic, &rbusRecvHandler, (void *)(&userData), 0);
+  ret |= rbusMessage_AddListener(handle, topic, &rbusRecvHandler, (void *)(&userData), 0, false);
   EXPECT_EQ(ret, RBUS_ERROR_SUCCESS);
 
   hasSenderStarted(handle, "rbus_multi_send0");
@@ -321,7 +321,7 @@ static int rbus_multi_recv(const char *topic, int index, rbusGtestMsg_t test)
   userData.cond = &cond;
   strcpy(userData.componentName, componentName);
 
-  ret |= rbusMessage_AddListener(handle, topic, &rbusRecvHandler, (void *)(&userData), 0);
+  ret |= rbusMessage_AddListener(handle, topic, &rbusRecvHandler, (void *)(&userData), 0, false);
   EXPECT_EQ(ret, RBUS_ERROR_SUCCESS);
 
   pthread_cond_wait(&cond, &lock);
@@ -525,8 +525,8 @@ static void exec_msg_test(rbusGtestMsg_t test)
           uint32_t listenerId;
 
           EXPECT_EQ(rbus_open(&rbus, "rbus_recv"),0);
-          EXPECT_EQ(rbusMessage_AddListener(rbus, "A.B.C", &rbusRecvHandler, NULL, 0),0);
-          EXPECT_NE(rbusMessage_AddListener(rbus, "A.B.C", &rbusRecvHandler, NULL, 0),0);
+          EXPECT_EQ(rbusMessage_AddListener(rbus, "A.B.C", &rbusRecvHandler, NULL, 0),0, false);
+          EXPECT_NE(rbusMessage_AddListener(rbus, "A.B.C", &rbusRecvHandler, NULL, 0),0, false);
           EXPECT_EQ(rbusMessage_RemoveListener(rbus, "A.B.C", 0),0);
           EXPECT_EQ(rbus_close(rbus),0);
       }

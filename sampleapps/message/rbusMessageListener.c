@@ -49,7 +49,7 @@ int main()
         return 1;
     }
 
-    rbusMessage_AddListener(rbus, "A.B.C", &rbusMessageHandler, NULL, 0);
+    rbusMessage_AddListener(rbus, "A.B.C", &rbusMessageHandler, NULL, 0, false);
 
     while (running)
     {

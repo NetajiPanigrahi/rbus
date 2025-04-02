@@ -395,7 +395,7 @@ rbusError_t rbusCloseDirect_SubRemove(rbusHandle_t handle, rtVector eventSubs, c
             handle->m_connection = handle->m_connectionParent; /* changed the handle m_connection of direct connection to use normal m_connection and used the same to add the rawdatatopic for normal connection*/
             memset(rawDataTopic, '\0', strlen(rawDataTopic));
             snprintf(rawDataTopic, RBUS_MAX_NAME_LENGTH, "rawdata.%s", subInternal->sub->eventName);
-            errorcode = rbusMessage_AddListener(handle, rawDataTopic, _subscribe_rawdata_handler, (void *)(subInternal->sub), subInternal->subscriptionId);
+            errorcode = rbusMessage_AddListener(handle, rawDataTopic, _subscribe_rawdata_handler, (void *)(subInternal->sub), subInternal->subscriptionId, false);
             if(errorcode != RBUS_ERROR_SUCCESS)
             {
                 RBUSLOG_ERROR("rbusMessage_AddListener failed err: %d", errorcode);
@@ -5187,6 +5187,38 @@ static void _subscribe_rawdata_handler(rbusHandle_t handle, rbusMessage_t* msg, 
     }
 }
 
+/************ NOTIFY DML ******************/
+static void _subscribe_notify_event_handler(rbusHandle_t handle, rbusMessage_t* msg, void * pUserData)
+{
+    (void)handle;
+//    (void)msg;
+    (void)pUserData;
+#if 0
+   char* buff = NULL;
+   uint32_t buff_length = 0;
+   rbusMessage_ToDebugString(msg, &buff, &buff_length);
+   printf("%s\n", buff);
+   free(buff);
+#endif
+    printf("rbusMessageHandler topic=%s data=%.*s\n", msg->topic, msg->length, (char const *)msg->data);
+    printf("%s: return: \n",__func__);
+}
+
+rbusError_t  rbusEvent_SubscribeNotifyEvent(rbusHandle_t handle, char const* eventName)
+{
+    rbusMessage_AddListener(handle, eventName, &_subscribe_notify_event_handler, NULL, 0, true);
+    return RBUS_ERROR_BUS_ERROR;
+}
+
+rbusError_t  rbusEvent_UnsubscribeNotifyEvent(rbusHandle_t handle, char const* eventName)
+{
+    if (rbusMessage_RemoveListener(handle, eventName, 0) != RT_OK)
+        RBUSLOG_WARN("rbusMessage_RemoveListener failed!");
+    return 0;
+}
+
+/************ END NOTIFY DML ******************/
+
 rbusError_t  rbusEvent_SubscribeRawData(
     rbusHandle_t        handle,
     char const*         eventName,
@@ -5241,7 +5273,7 @@ rbusError_t  rbusEvent_SubscribeRawData(
         subInternal = rbusEventSubscription_find(handleInfo->eventSubs, eventName, NULL, 0, 0, true);
         snprintf(rawDataTopic, RBUS_MAX_NAME_LENGTH, "rawdata.%s", eventName);
         errorcode = rbusMessage_AddListener(handle, rawDataTopic,
-                _subscribe_rawdata_handler, (void *)(subInternal->sub), subInternal->subscriptionId);
+                _subscribe_rawdata_handler, (void *)(subInternal->sub), subInternal->subscriptionId, false);
         if(errorcode != RBUS_ERROR_SUCCESS)
         {
             RBUSLOG_ERROR("%s: Listener failed err: %d", __FUNCTION__, errorcode);
@@ -5529,7 +5561,7 @@ rbusError_t rbusEvent_SubscribeExRawData(
                 subInternal = rbusEventSubscription_find(handleInfo->eventSubs, subscription[i].eventName, subscription[i].filter, subscription[i].interval, subscription[i].duration, true);
                 snprintf(rawDataTopic, RBUS_MAX_NAME_LENGTH, "rawdata.%s", subscription[i].eventName);
                 errorcode = rbusMessage_AddListener(handle, rawDataTopic,
-                        _subscribe_rawdata_handler, (void *)(subInternal->sub), subInternal->subscriptionId);
+                        _subscribe_rawdata_handler, (void *)(subInternal->sub), subInternal->subscriptionId, false);
                 if(errorcode != RBUS_ERROR_SUCCESS)
                 {
                     RBUSLOG_ERROR("%s: Listener failed err: %d", __FUNCTION__, errorcode);

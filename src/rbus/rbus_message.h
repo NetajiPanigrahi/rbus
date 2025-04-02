@@ -114,7 +114,8 @@ rbusError_t rbusMessage_AddListener(
     char const* expression,
     rbusMessageHandler_t handler,
     void* userData,
-    uint32_t subscriptionId);
+    uint32_t subscriptionId,
+    bool notify);
 
 /** @fn rbusError_t rbusMessage_RemovePrivateListener(
  *          rbusHandle_t handle,

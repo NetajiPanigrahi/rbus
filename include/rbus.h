@@ -2083,7 +2083,8 @@ rbusError_t rbusHandle_ConfigSetMultiTimeout(rbusHandle_t handle, uint32_t timeo
  */
 rbusError_t rbusHandle_ConfigSubscribeTimeout(rbusHandle_t handle, uint32_t timeout);
 /** @} */
-
+rbusError_t  rbusEvent_SubscribeNotifyEvent(rbusHandle_t handle, char const* eventName);
+rbusError_t  rbusEvent_UnsubscribeNotifyEvent(rbusHandle_t handle, char const* eventName);
 #ifdef __cplusplus
 }
 #endif

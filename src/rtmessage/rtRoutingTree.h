@@ -140,6 +140,7 @@ typedef struct rtTreeTopic
     rtList childList;       /*list of rtTreeTopic: list of child topics*/
     rtList routeList;       /*list of rtTreeRoute: list of routes directly assigned to this topic*/
     rtList routeList2;      /*list of rtTreeRoute: list of all routes either assigned to this topic or assigned to a descendents topic (except leaf nodes)*/
+    rtList notifyList;       /*list of rtTreeRoute: list of notify routes assigned to this topic*/
     char* name;
     char* fullName;
     int isTable;
@@ -153,10 +154,12 @@ typedef struct _rtRoutingTree
 
 void rtRoutingTree_Create(rtRoutingTree* rt);
 void rtRoutingTree_Destroy(rtRoutingTree rt);
-rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topic, const void* route, int err_on_dup);
+rtError rtRoutingTree_AddTopicRoute(rtRoutingTree rt, const char* topic, const void* route, int err_on_dup, int add_notify_route);
+void rtRoutingTree_GetTopicNotifyRoutes(rtRoutingTree rt, const char* topic, rtList* routes);
 void rtRoutingTree_GetTopicRoutes(rtRoutingTree rt, const char* topic, rtList* routes);
 void rtRoutingTree_GetRouteTopics(rtRoutingTree rt, const void* route, rtList* topics);
 void rtRoutingTree_RemoveRoute(rtRoutingTree rt, const void* route);
+void rtRoutingTree_RemoveOnlyRoute(rtRoutingTree rt, const void* route);
 void rtRoutingTree_RemoveTopic(rtRoutingTree rt, const char* topic);
 void rtRoutingTree_ResolvePartialPath(rtRoutingTree rt, const char* partialPath, rtList topics);
 void rtRoutingTree_LogStats(rtRoutingTree rt);

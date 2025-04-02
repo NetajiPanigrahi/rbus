@@ -606,7 +606,7 @@ rtConnection_CreateInternal(rtConnection* con, char const* application_name, cha
 
   if (err == RT_OK)
   {
-    rtConnection_AddListenerWithId(c, c->inbox_name, RTCONNECTION_CREATE_EXPRESSION_ID, onDefaultMessage, c);
+    rtConnection_AddListenerWithId(c, c->inbox_name, RTCONNECTION_CREATE_EXPRESSION_ID, onDefaultMessage, c, false);
     rtConnection_StartThreads(c);
     *con = c;
   }
@@ -1229,13 +1229,13 @@ rtConnection_SendInternal(rtConnection con, uint8_t const* buff, uint32_t n, cha
 }
 
 rtError
-rtConnection_AddListener(rtConnection con, char const* expression, rtMessageCallback callback, void* closure)
+rtConnection_AddListener(rtConnection con, char const* expression, rtMessageCallback callback, void* closure, bool notify)
 {
-    return rtConnection_AddListenerWithId(con, expression, rtConnection_GetNextSubscriptionId(), callback, closure);
+    return rtConnection_AddListenerWithId(con, expression, rtConnection_GetNextSubscriptionId(), callback, closure, notify);
 }
 
 rtError
-rtConnection_AddListenerWithId(rtConnection con, char const* expression, uint32_t expressionId, rtMessageCallback callback, void* closure)
+rtConnection_AddListenerWithId(rtConnection con, char const* expression, uint32_t expressionId, rtMessageCallback callback, void* closure, bool notify)
 {
   int i;
 
@@ -1266,6 +1266,9 @@ rtConnection_AddListenerWithId(rtConnection con, char const* expression, uint32_
   
   rtMessage m;
   rtMessage_Create(&m);
+  if (notify)
+  rtMessage_SetInt32(m, "add", 2);
+  else
   rtMessage_SetInt32(m, "add", 1);
   rtMessage_SetString(m, "topic", expression);
   rtMessage_SetInt32(m, "route_id", con->listeners[i].subscription_id); 

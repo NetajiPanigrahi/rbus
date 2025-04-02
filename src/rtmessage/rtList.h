@@ -61,6 +61,7 @@ rtError rtListItem_GetPrev(rtListItem item, rtListItem* pitem);
 
 void rtList_Cleanup_Free(void* item);
 int rtList_Compare_String(const void* left, const void* right);
+int rtList_ComparePointer(const void* left, const void* right);
 
 #ifdef __cplusplus
 }

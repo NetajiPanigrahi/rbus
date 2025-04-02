@@ -91,7 +91,7 @@ int main(int argc, char* argv[])
 
   rtLog_SetLevel(RT_LOG_WARN);
   rtConnection_Create(&con, "rtsub", router);
-  rtConnection_AddListener(con, argv[argc-1], on_message, NULL);
+  rtConnection_AddListener(con, argv[argc-1], on_message, NULL, false);
 
   while ((err = rtConnection_Dispatch(con)) == RT_OK)
   {

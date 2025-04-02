@@ -559,7 +559,7 @@ int main(int argc, char* argv[])
         if(topics[i][0] != '\0')
         {
             printf("listening on topic %s\n", topics[i]);
-            rtConnection_AddListener(g_connection, topics[i], onMessage, g_connection);
+            rtConnection_AddListener(g_connection, topics[i], onMessage, g_connection, false);
 
             /*if aliases are asked for, apply all aliases to the first topic*/
             if(i == 0)
@@ -578,7 +578,7 @@ int main(int argc, char* argv[])
     if(listening_advisory)
     {
         printf("listening on advisory topic %s\n", RTMSG_ADVISORY_TOPIC);
-        rtConnection_AddListener(g_connection, RTMSG_ADVISORY_TOPIC, onMessage, g_connection);
+        rtConnection_AddListener(g_connection, RTMSG_ADVISORY_TOPIC, onMessage, g_connection, false);
     }
 
     while(wait > 0)

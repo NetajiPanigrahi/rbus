@@ -373,15 +373,15 @@ rtRouted_ParseConfig(char const* fname)
 }
 
 static rtError
-rtRouted_AddRoute(rtRouteMessageHandler handler, char const* exp, rtSubscription* subscription)
+rtRouted_AddRoute(rtRouteMessageHandler handler, char const* exp, rtSubscription* subscription, int isNotifyRoute)
 {
   rtRouteEntry* route = (rtRouteEntry *) rt_malloc(sizeof(rtRouteEntry));
   route->subscription = subscription;
   route->message_handler = handler;
   strncpy(route->expression, exp, RTMSG_MAX_EXPRESSION_LEN);
   rtVector_PushBack(gRoutes, route);
-  rtLog_Debug("AddRoute route=[%p] address=[%s] expression=[%s]", route, subscription->client->ident, exp);
-  rtRoutingTree_AddTopicRoute(gRoutingTree, exp, (void *)route, 0/*ignfore duplicate entry*/);
+  rtLog_Debug("AddRoute route=[%p] address=[%s] expression=[%s], isNotifyRoute=[%d]", route, subscription->client->ident, exp, isNotifyRoute);
+  rtRoutingTree_AddTopicRoute(gRoutingTree, exp, (void *)route, 0/*ignfore duplicate entry*/,isNotifyRoute);
   return RT_OK;
 }
 
@@ -416,11 +416,25 @@ rtRouted_ShouldLimitLog(char const* pTopicExpression)
 }
 
 static rtError
+rtRouted_AddNotifyRoute(char const* exp, rtRouteEntry * route)
+{
+  rtError rc = RT_OK;
+  //rtLog_Debug("AddAlias route=[%p] address=[%s] expression=[%s] alias=[%s]", route, route->subscription->client->ident, route->expression, exp);
+  rc = rtRoutingTree_AddTopicRoute(gRoutingTree, exp, (void *)route, 0/*error if duplicate entry*/, 1);
+  if (RT_ERROR_DUPLICATE_ENTRY == rc)
+      if (rtRouted_ShouldLimitLog(exp))
+          rtLog_Warn("Rejecting Duplicate Registration of [%s] by [%s] thro [%s]", exp, route->expression, route->subscription->client->ident);
+
+  return rc;
+}
+
+
+static rtError
 rtRouted_AddAlias(char const* exp, rtRouteEntry * route)
 {
   rtError rc = RT_OK;
   rtLog_Debug("AddAlias route=[%p] address=[%s] expression=[%s] alias=[%s]", route, route->subscription->client->ident, route->expression, exp);
-  rc = rtRoutingTree_AddTopicRoute(gRoutingTree, exp, (void *)route, 1/*error if duplicate entry*/);
+  rc = rtRoutingTree_AddTopicRoute(gRoutingTree, exp, (void *)route, 1/*error if duplicate entry*/, 0);
   if (RT_ERROR_DUPLICATE_ENTRY == rc)
       if (rtRouted_ShouldLimitLog(exp))
           rtLog_Warn("Rejecting Duplicate Registration of [%s] by [%s] thro [%s]", exp, route->expression, route->subscription->client->ident);
@@ -479,6 +493,82 @@ rtConnectedClient_Destroy(rtConnectedClient* clnt)
 #endif
 
   free(clnt);
+}
+
+static rtError
+rtRouted_SendNotifyMessage(rtMessageHeader * request_hdr, rtMessage message, rtConnectedClient* skipClient)
+{
+    rtError ret = RT_OK;
+    ssize_t bytes_sent;
+    uint8_t* buffer = NULL;
+    uint32_t size;
+    rtConnectedClient * client = NULL;
+    rtList list;
+    rtListItem item;
+    int found_dest = 0;
+
+    rtMessage_ToByteArray(message, &buffer, &size);
+    request_hdr->payload_length = size;
+
+    rtRouteEntry *route = NULL;
+    rtLog_Info("Send Notify Message for topic=%s", request_hdr->topic);
+
+    /*Find the list of notify routes*/
+    rtRoutingTree_GetTopicNotifyRoutes(gRoutingTree, request_hdr->topic, &list);
+    if(list)
+    {
+        rtList_GetFront(list, &item);
+        while(item)
+        {
+            rtTreeRoute* treeRoute;
+            rtListItem_GetData(item, (void**)&treeRoute);
+            rtListItem_GetNext(item, &item);
+            route = treeRoute->route;
+            if(route)
+            {
+                rtLog_Info("Send Notify Message topic=%s expression=%s", request_hdr->topic, route->expression);
+                found_dest = 1;
+                request_hdr->control_data = route->subscription->id;
+                client = route->subscription->client;
+                if(client != skipClient)
+                {
+                    rtMessageHeader_Encode(request_hdr, client->send_buffer);
+                    struct iovec send_vec[] = {{client->send_buffer, request_hdr->header_length}, {(void *)buffer, size}};
+                    struct msghdr send_hdr = {NULL, 0, send_vec, 2, NULL, 0, 0};
+                    do
+                    {
+                        bytes_sent = sendmsg(client->fd, &send_hdr, MSG_NOSIGNAL);
+                        if (bytes_sent == -1)
+                        {
+                            if (errno == EBADF)
+                                ret = rtErrorFromErrno(errno);
+                            else
+                            {
+                                rtLog_Warn("error forwarding message to client. %d %s", errno, strerror(errno));
+                                rtRouted_PrintClientInfo(client);
+                                if(skipClient)
+                                    rtRouted_PrintClientInfo(skipClient);
+                                ret = RT_FAIL;
+                            }
+                            break;
+                        }
+
+                    } while(0);
+                }
+            }
+            rtLog_Info("SendNotifyMessage:%d DOne", __LINE__);
+        }
+    }
+    if(!found_dest)
+    {
+        if(strcmp(request_hdr->topic, "_RTROUTED.ADVISORY"))
+        {
+            ret = RT_FAIL;
+            rtLog_Warn("Could not find route to destination. Topic=%s ", request_hdr->topic);
+        }
+    }
+    rtMessage_FreeByteArray(buffer);
+    return ret;
 }
 
 static rtError
@@ -554,6 +644,27 @@ rtRouted_SendMessage(rtMessageHeader * request_hdr, rtMessage message, rtConnect
   return ret;
 }
 
+static void rtRouted_SendNotify(const char* parameter, bool added)
+{
+    rtMessage msg;
+    rtMessageHeader hdr;
+    rtMessage_Create(&msg);
+
+    rtMessage_SetString(msg,"data_model", parameter);
+    if (added)
+        rtMessage_SetString(msg,"availability", "yes");
+    else
+        rtMessage_SetString(msg, "availability","no");
+    rtMessageHeader_Init(&hdr);
+    hdr.topic_length = RTMSG_HEADER_MAX_TOPIC_LENGTH;
+    strncpy(hdr.topic, parameter, RTMSG_HEADER_MAX_TOPIC_LENGTH-1);
+
+    rtLog_Debug("Sending topic %s notify message", parameter);
+    if (RT_OK != rtRouted_SendNotifyMessage(&hdr, msg, NULL))
+        rtLog_Info("Failed to send notification");
+    rtMessage_Release(msg);
+    rtLog_Debug("\n ==== Sending dml notify message\n");
+}
 
 rtError rtRouted_TrafficMonitorLog(rtConnectedClient* sender, rtMessageHeader* hdr, uint8_t const* buff, int n, rtSubscription* subscription)
 {
@@ -748,94 +859,137 @@ static void prep_reply_header_from_request(rtMessageHeader *reply, const rtMessa
 static void
 rtRouted_OnMessageSubscribe(rtConnectedClient* sender, rtMessageHeader* hdr, uint8_t const* buff, int n)
 {
-  char const* expression = NULL;
-  uint32_t route_id = 0;
-  uint32_t i = 0;
-  int32_t add_subscrption = 0;
-  rtMessage m;
-  rtMessage response = NULL;
-  rtError rc = RT_OK;
+    char const* expression = NULL;
+    uint32_t route_id = 0;
+    uint32_t i = 0;
+    int32_t add_subscrption = 0;
+    rtMessage m;
+    rtMessage response = NULL;
+    rtError rc = RT_OK;
+    int32_t isNotifyRoute = 0;
 
-  if(RT_OK != rtMessage_FromBytes(&m, buff, n))
-  {
-    rtLog_Warn("Bad Subscribe message");
-    rtLog_Warn("Sender %s", sender->ident);
-    rc = RT_ERROR;
-  }
-  else
-  {
-    if((RT_OK == rtMessage_GetInt32(m, "add", &add_subscrption)) &&
-       (RT_OK == rtMessage_GetString(m, "topic", &expression)) &&
-       (RT_OK == rtMessage_GetInt32(m, "route_id", (int32_t *)&route_id)) &&
-       (0 == validate_string(expression, RTMSG_MAX_EXPRESSION_LEN)))
+    if(RT_OK != rtMessage_FromBytes(&m, buff, n))
     {
-      if(1 == add_subscrption)
-      {
-        for (i = 0; i < rtVector_Size(gRoutes); i++)
-        {
-          rtRouteEntry* route = (rtRouteEntry *) rtVector_At(gRoutes, i);
-          if (route->subscription && (route->subscription->client == sender) && (route->subscription->id == route_id))
-          {
-            rc = rtRouted_AddAlias(expression, route);
-            break;
-          }
-        }
-        if(i == rtVector_Size(gRoutes))
-        {
-          rtSubscription* subscription = (rtSubscription *) rt_malloc(sizeof(rtSubscription));
-          subscription->id = route_id;
-          subscription->client = sender;
-          rc = rtRouted_AddRoute(rtRouted_ForwardMessage, expression, subscription);
-
-          if(strstr(expression, ".INBOX.") && sender->inbox[0] == '\0')
-          {
-              strncpy(sender->inbox, expression, RTMSG_HEADER_MAX_TOPIC_LENGTH);
-              rtLog_Debug("init client inbox to %s", sender->inbox);
-              rtRouted_SendAdvisoryMessage(sender, rtAdviseClientConnect);
-          }
-        }
-      }
-      else
-      {
-        int route_removed = 0;
-        for (i = 0; i < rtVector_Size(gRoutes); i++)
-        {
-          rtRouteEntry* route = (rtRouteEntry *) rtVector_At(gRoutes, i);
-
-          if((route->subscription) && (0 == strncmp(route->expression, expression, RTMSG_MAX_EXPRESSION_LEN)) && (route->subscription->client == sender))
-          {
-            rtRouted_ClearRoute(route);
-            route_removed = 1;
-            break;
-          }
-        }
-        if(0 == route_removed)
-        {
-          //Not a route. Is it an alias?
-          rtLog_Debug("Removing alias %s", expression);
-          rtRoutingTree_RemoveTopic(gRoutingTree, expression);
-        }
-      }
+        rtLog_Warn("Bad Subscribe message");
+        rtLog_Warn("Sender %s", sender->ident);
+        rc = RT_ERROR;
     }
     else
     {
-      rtLog_Warn("Bad subscription message from %s", sender->ident);
-      rc = RT_ERROR_INVALID_ARG;
-    }
-  }
-  rtMessage_Release(m);
+        if((RT_OK == rtMessage_GetInt32(m, "add", &add_subscrption)) &&
+                (RT_OK == rtMessage_GetString(m, "topic", &expression)) &&
+                (RT_OK == rtMessage_GetInt32(m, "route_id", (int32_t *)&route_id)) &&
+                (0 == validate_string(expression, RTMSG_MAX_EXPRESSION_LEN)))
+        {
+            /* add_subscrption value 1: for route, 2: for listener*/	    
+            if((1 == add_subscrption) || (2 == add_subscrption))
+            {
+                for (i = 0; i < rtVector_Size(gRoutes); i++)
+                {
+                    rtRouteEntry* route = (rtRouteEntry *) rtVector_At(gRoutes, i);
+                    if (route->subscription && (route->subscription->client == sender) && (route->subscription->id == route_id))
+                    {
+                        if (1 == add_subscrption)
+                        {
+                            rc = rtRouted_AddAlias(expression, route);
+                            /* Notify to listeners*/
+                            if((rc == RT_OK) && (strstr(expression, ".INBOX.") == 0) && (strstr(expression, "_RTROUTED.") == 0))
+                            {
+                                rtRouted_SendNotify(expression, 1);
+                            }
+                            break;
+                        }
+                        else if (2 == add_subscrption)
+                        {
 
-  /* Send Response */
-  if(hdr->flags & rtMessageFlags_Request)
-  {
-      rtMessage_Create(&response);
-      rtMessage_SetInt32(response, "result", rc);
-      rtMessageHeader new_header;
-      prep_reply_header_from_request(&new_header, hdr);
-      if(RT_OK != rtRouted_SendMessage(&new_header, response, NULL))
-          rtLog_Info("%s() Response couldn't be sent.", __func__);
-      rtMessage_Release(response);
-  }
+                            if((strstr(expression, ".INBOX.") == 0) && (strstr(expression, "_RTROUTED.") == 0))
+                            {
+                                /* Create topic and add route to it's notify list*/		  
+                                rtLog_Info("%s() Add notifyList, expression: %s.", __func__, expression);
+                                rc = rtRouted_AddNotifyRoute(expression, route);
+                            }
+                        }
+                    }
+                }
+                if(i == rtVector_Size(gRoutes))
+                {
+                    rtSubscription* subscription = (rtSubscription *) rt_malloc(sizeof(rtSubscription));
+                    subscription->id = route_id;
+                    subscription->client = sender;
+                    if ((2 == add_subscrption) && (strstr(expression, ".INBOX.") == 0) && (strstr(expression, "_RTROUTED.") == 0)) 
+                    {
+                        rtLog_Info("%s() Set it isNotifyRoute.", __func__);
+                        isNotifyRoute = 1;
+                    }
+                    rc = rtRouted_AddRoute(rtRouted_ForwardMessage, expression, subscription, isNotifyRoute);
+                    if(strstr(expression, ".INBOX.") && sender->inbox[0] == '\0')
+                    {
+                        strncpy(sender->inbox, expression, RTMSG_HEADER_MAX_TOPIC_LENGTH);
+                        rtLog_Debug("init client inbox to %s", sender->inbox);
+                        rtRouted_SendAdvisoryMessage(sender, rtAdviseClientConnect);
+                    }
+                }
+            }
+            else
+            {
+                int route_removed = 0;
+                rtRouteEntry* route = NULL;
+                for (i = 0; i < rtVector_Size(gRoutes); i++)
+                {
+                    route = (rtRouteEntry *) rtVector_At(gRoutes, i);
+
+                    if((route->subscription) && (0 == strncmp(route->expression, expression, RTMSG_MAX_EXPRESSION_LEN)) && (route->subscription->client == sender))
+                    {
+                        rtRouted_ClearRoute(route);
+                        route_removed = 1;
+                        break;
+                    }
+                }
+                if(0 == route_removed)
+                {
+                    //Not a route. Is it an alias?
+                    rtLog_Debug("Removing alias %s", expression);
+                    //rtRoutingTree_RemoveTopic(gRoutingTree, expression);
+                    //if (rtRoutingTree_RemoveOnlyRoute(gRoutingTree, route) == )
+                    rtRoutingTree_LogStats(gRoutingTree);
+                    //rtRoutingTree_RemoveOnlyRoute(gRoutingTree, route);
+                    rtList list;
+                    size_t count = 0;
+                    rtRoutingTree_GetTopicRoutes(gRoutingTree, expression, &list);
+                    rtList_GetSize(list, &count);
+                    rtLog_Debug("Removing alias %s: list size: %ld", expression, count);
+
+                    rtListItem routeItem;
+                    rtList_GetFront(list, &routeItem);
+                    if (routeItem)
+                    {
+                        rtList_RemoveItem(list, routeItem, NULL);
+                    }
+                    rtList_GetSize(list, &count);
+                    rtLog_Debug("Removing alias %s: list size: %ld", expression, count);
+                    rtRouted_SendNotify(expression, 0);
+                }
+            }
+        }
+        else
+        {
+            rtLog_Warn("Bad subscription message from %s", sender->ident);
+            rc = RT_ERROR_INVALID_ARG;
+        }
+    }
+    rtMessage_Release(m);
+
+    /* Send Response */
+    if(hdr->flags & rtMessageFlags_Request)
+    {
+        rtMessage_Create(&response);
+        rtMessage_SetInt32(response, "result", rc);
+        rtMessageHeader new_header;
+        prep_reply_header_from_request(&new_header, hdr);
+        if(RT_OK != rtRouted_SendMessage(&new_header, response, NULL))
+            rtLog_Info("%s() Response couldn't be sent.", __func__);
+        rtMessage_Release(response);
+    }
 }
 
 static void
@@ -855,7 +1009,7 @@ rtRouted_OnMessageHello(rtConnectedClient* sender, rtMessageHeader* hdr, uint8_t
   rtSubscription* subscription = (rtSubscription *) rt_malloc(sizeof(rtSubscription));
   subscription->id = 0;
   subscription->client = sender;
-  rtRouted_AddRoute(rtRouted_ForwardMessage, inbox, subscription);
+  rtRouted_AddRoute(rtRouted_ForwardMessage, inbox, subscription, 0);
 
   rtMessage_Release(m);
   
@@ -1788,17 +1942,17 @@ int main(int argc, char* argv[])
     strncpy(route->expression, "_RTROUTED.>", RTMSG_MAX_EXPRESSION_LEN-1);
     route->message_handler = rtRouted_OnMessage;
     rtVector_PushBack(gRoutes, route);
-    rtRoutingTree_AddTopicRoute(gRoutingTree, "_RTROUTED.INBOX.SUBSCRIBE", (void *)route, 0);
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_WILDCARD_DESTINATIONS, (void *)route, 0);
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_REGISTERED_COMPONENTS, (void *)route, 0);
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_OBJECT_ELEMENTS, (void *)route, 0);
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_ELEMENT_OBJECTS, (void *)route, 0);
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTROUTER_DIAG_DESTINATION, (void *)route, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, "_RTROUTED.INBOX.SUBSCRIBE", (void *)route, 0, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_WILDCARD_DESTINATIONS, (void *)route, 0, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_REGISTERED_COMPONENTS, (void *)route, 0, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_OBJECT_ELEMENTS, (void *)route, 0, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTM_DISCOVER_ELEMENT_OBJECTS, (void *)route, 0, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTROUTER_DIAG_DESTINATION, (void *)route, 0, 0);
 #ifdef WITH_SPAKE2
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTROUTED_KEY_EXCHANGE, (void *)route, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTROUTED_KEY_EXCHANGE, (void *)route, 0, 0);
 #endif
 #ifdef MSG_ROUNDTRIP_TIME
-    rtRoutingTree_AddTopicRoute(gRoutingTree, RTROUTED_TRANSACTION_TIME_INFO, (void *)route, 0);
+    rtRoutingTree_AddTopicRoute(gRoutingTree, RTROUTED_TRANSACTION_TIME_INFO, (void *)route, 0, 0);
 #endif
   }
 

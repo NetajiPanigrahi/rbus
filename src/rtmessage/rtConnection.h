@@ -187,7 +187,7 @@ rtConnection_SendBinaryResponse(rtConnection con, rtMessageHeader const* request
  */
 rtError
 rtConnection_AddListenerWithId(rtConnection con, char const* expression,
-  uint32_t expressionId, rtMessageCallback callback, void* closure);
+  uint32_t expressionId, rtMessageCallback callback, void* closure, bool notify);
 
 /**
  * Register a callback for message receipt
@@ -198,7 +198,7 @@ rtConnection_AddListenerWithId(rtConnection con, char const* expression,
  * @return error
  */
 rtError
-rtConnection_AddListener(rtConnection con, char const* expression, rtMessageCallback callback, void* closure);
+rtConnection_AddListener(rtConnection con, char const* expression, rtMessageCallback callback, void* closure, bool notify);
 
 /**
  * Remove a callback listener

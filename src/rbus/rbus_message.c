@@ -146,7 +146,7 @@ rbusError_t rbusMessage_AddPrivateListener(
     rtVector_PushBack(handle->messageCallbacks, ctx);
 
     snprintf(rawDataTopic, RBUS_MAX_NAME_LENGTH, "%d.%s", subscriptionId, expression);
-    rtError e = rtConnection_AddListenerWithId(myConn, rawDataTopic, subscriptionId, &rtMessage_CallbackHandler, ctx);
+    rtError e = rtConnection_AddListenerWithId(myConn, rawDataTopic, subscriptionId, &rtMessage_CallbackHandler, ctx, false);
     RBUS_MESSAGE_MUTEX_UNLOCK();
     if (e != RT_OK)
     {
@@ -162,7 +162,8 @@ rbusError_t rbusMessage_AddListener(
     char const* expression,
     rbusMessageHandler_t handler,
     void* userData,
-    uint32_t subscriptionId)
+    uint32_t subscriptionId,
+    bool notify)
 {
     VERIFY_NULL(handle);
     VERIFY_NULL(expression);
@@ -178,7 +179,7 @@ rbusError_t rbusMessage_AddListener(
     RBUS_MESSAGE_MUTEX_LOCK();
     rtVector_PushBack(handle->messageCallbacks, ctx);
 
-    rtError e = rtConnection_AddListenerWithId(con, expression, subscriptionId, &rtMessage_CallbackHandler, ctx);
+    rtError e = rtConnection_AddListenerWithId(con, expression, subscriptionId, &rtMessage_CallbackHandler, ctx, notify);
     RBUS_MESSAGE_MUTEX_UNLOCK();
     if (e != RT_OK)
     {

@@ -1537,7 +1537,7 @@ void validate_and_execute_set_cmd (int argc, char *argv[])
         RBUSCLI_LOG ("setvalues failed with return value: %d\r\n", rc);
     }
 }
-
+#if 0
 void validate_and_execute_setcommit_cmd (int argc, char *argv[])
 {
     rbusError_t rc = RBUS_ERROR_SUCCESS;
@@ -1571,6 +1571,233 @@ void validate_and_execute_setcommit_cmd (int argc, char *argv[])
         printf ("Invalid arguments. Please see the help\r\n");
     }
 }
+#endif
+void validate_and_execute_setcommit_cmd (int argc, char *argv[])
+{
+    rbusError_t rc = RBUS_ERROR_SUCCESS;
+    int i = argc - 2;
+    bool isCommit = true;
+    unsigned int sessionId = 0;
+
+    runSteps = __LINE__;
+    /* must have 3 or multiples of 3 parameters.. it could possibliy have 1 extra param which
+     * could be having commit and set to true/false */
+    if (((strcmp("-s", argv[1]) == 0 ) && (i > 3)) || (!((i >= 3) && ((i % 3 == 0) || (i % 3 == 1)))))
+    {
+        RBUSCLI_LOG ("Invalid arguments. Please see the help\n\r");
+        return;
+    }
+
+    if (!verify_rbus_open())
+        return;
+
+    if ((i > 4) && !(strcmp("-s", argv[1]) == 0)) /* Multiple set commands; Lets use rbusValue_t */
+    {
+        int isInvalid = 0;
+        int index = 0;
+        int loopCnt = 0;
+        int paramCnt = i/3;
+        rbusProperty_t properties = NULL;
+        rbusValue_t setVal[RBUS_CLI_MAX_PARAM];
+        char const* setNames[RBUS_CLI_MAX_PARAM];
+
+        for (index = 0, loopCnt = 0; index < paramCnt; loopCnt+=3, index++)
+        {
+            /* Create Param w/ Name */
+            rbusValue_Init(&setVal[index]);
+            setNames[index] = argv[loopCnt+2];
+
+            printf ("Name = %s \n\r", argv[loopCnt+2]);
+
+            /* Get Param Type */
+            rbusValueType_t type = getDataType_fromString(argv[loopCnt+3]);
+
+            if (type == RBUS_NONE)
+            {
+                printf ("Invalid data type. Please see the help\n\r");
+                isInvalid = 1;
+                break;
+            }
+
+            rbusValue_SetFromString(setVal[index], type, argv[loopCnt+4]);
+
+            rbusProperty_t next;
+            rbusProperty_Init(&next, setNames[index], setVal[index]);
+            if(properties == NULL)
+            {
+                properties = next;
+            }
+            else
+            {
+                rbusProperty_Append(properties, next);
+                rbusProperty_Release(next);
+            }
+        }
+
+        if (0 == isInvalid)
+        {
+            /* Set Session ID & Commit value */
+            if (g_isInteractive)
+            {
+                /* Do we have commit param? (n*3) + 1 */
+                if (i % 3 == 1)
+                {
+                    /* Is commit */
+                    if (strncasecmp ("true", argv[argc - 1], 4) == 0)
+                        isCommit = true;
+                    else if (strncasecmp ("false", argv[argc - 1], 5) == 0)
+                    {
+                        isCommit = false;
+                        if(g_curr_sessionId == 0)
+                        {
+                            rc = rbus_createSession(g_busHandle, &g_curr_sessionId);
+                            if(rc != RBUS_ERROR_SUCCESS)
+                            {
+                                printf("Session creation failed with err = %d\n", rc);
+                            }
+                        }
+                        if(g_curr_sessionId == 0)
+                            printf("Can't set the value temporarily with sessionId 0 and commit false\n");
+                    }
+                    else
+                        isCommit = true;
+
+                }
+                else
+                {
+                    isCommit = true;
+                }
+                if(isCommit && g_curr_sessionId != 0)
+                {
+                    printf("closing the session\n");
+                    fflush(stdout);
+                    rc = rbus_closeSession(g_busHandle, g_curr_sessionId);
+                    if(rc != RBUS_ERROR_SUCCESS)
+                    {
+                        printf("Session close failed with err = %d\n", rc);
+                    }
+                    g_curr_sessionId = 0;
+                }
+                sessionId = g_curr_sessionId;
+            }
+            else
+            {
+                /* For non-interactive mode, regardless of COMMIT value tha is passed, we assume the isCommit as TRUE */
+                isCommit = true;
+                sessionId = 0;
+            }
+
+            rbusSetOptions_t opts = {isCommit,sessionId};
+            rc = rbus_setMulti(g_busHandle, paramCnt, properties/*setNames, setVal*/, &opts);
+        }
+        else
+        {
+            /* Since we allocated memory for `loopCnt` times, we must free them.. lets update the `paramCnt` to `loopCnt`; so that the below free function will take care */
+            paramCnt = index;
+            rc = RBUS_ERROR_INVALID_INPUT;
+        }
+
+        /* free the memory that was allocated */
+        for (loopCnt = 0; loopCnt < paramCnt; loopCnt++)
+        {
+            rbusValue_Release(setVal[loopCnt]);
+        }
+        rbusProperty_Release(properties);
+    }
+    else /* Single Set Command */
+    {
+        rbusValue_t setVal;
+        bool value = false;
+        /* Get Param Type */
+        rbusValueType_t type = getDataType_fromString(argv[3]);
+        rbusValue_Init(&setVal);
+        value = rbusValue_SetFromString(setVal, type, argv[4]);
+        if(value == false)
+        {
+            rc = RBUS_ERROR_INVALID_INPUT;
+            RBUSCLI_LOG ("Invalid data value passed to set. Please pass proper value with respect to the data type\nsetvalues failed with return value: %d\n", rc);
+            return;
+        }
+        if (type != RBUS_NONE)
+        {
+
+            runSteps = __LINE__;
+            /* Set Session ID & Commit value */
+            if (g_isInteractive)
+            {
+                if (4 == i)
+                {
+                    /* Is commit */
+                    if (strncasecmp ("true", argv[argc - 1], 4) == 0)
+                        isCommit = true;
+                    else if (strncasecmp ("false", argv[argc - 1], 5) == 0)
+                    {
+                        isCommit = false;
+                        if(g_curr_sessionId == 0)
+                        {
+                            rc = rbus_createSession(g_busHandle, &g_curr_sessionId);
+                            if(rc != RBUS_ERROR_SUCCESS)
+                            {
+                                printf("Session creation failed with err = %d\n", rc);
+                            }
+                        }
+                        if(g_curr_sessionId == 0)
+                            printf("Can't set the value temporarily with sessionId 0 and commit false\n");
+                    }
+                    else
+                        isCommit = true;
+                    sessionId = g_curr_sessionId;
+                }
+                else
+                {
+                    isCommit = true;
+                    sessionId = 0;
+                }
+                if(isCommit && g_curr_sessionId != 0)
+                {
+                    printf("closing the session\n");
+                    fflush(stdout);
+                    rc = rbus_closeSession(g_busHandle, g_curr_sessionId);
+                    if(rc != RBUS_ERROR_SUCCESS)
+                    {
+                        printf("Session close failed with err = %d\n", rc);
+                    }
+                    g_curr_sessionId = 0;
+                }
+            }
+            else
+            {
+                /* For non-interactive mode, regardless of COMMIT value tha is passed, we assume the isCommit as TRUE */
+                isCommit = true;
+                sessionId = 0;
+            }
+            (void)sessionId;
+
+            /* Assume a sessionId as it is going to be single entry thro this cli app; */
+            rbusSetOptions_t opts = {isCommit,sessionId};
+            rc = rbus_set(g_busHandle, argv[2], setVal, &opts);
+
+            /* Free the data pointer that was allocated */
+            rbusValue_Release(setVal);
+        }
+        else
+        {
+            rc = RBUS_ERROR_INVALID_INPUT;
+            RBUSCLI_LOG ("Invalid data type. Please see the help\n\r");
+        }
+    }
+
+    if(RBUS_ERROR_SUCCESS == rc)
+    {
+        RBUSCLI_LOG ("setvalues succeeded..\n\r");
+    }
+    else
+    {
+        RBUSCLI_LOG ("setvalues failed with return value: %d\n\r", rc);
+    }
+}
+
+
 
 void validate_and_execute_getnames_cmd (int argc, char *argv[])
 {
@@ -2376,6 +2603,17 @@ void validate_and_execute_close_session_cmd (int argc, char *argv[])
     g_curr_sessionId = 0;
 }
 
+void validate_and_execute_notify_cmd (int argc, char *argv[], bool add)
+{
+    (void)argc;
+    if (!verify_rbus_open())
+        return;
+    if (add)
+        rbusEvent_SubscribeNotifyEvent(g_busHandle, argv[2]);
+    else
+        rbusEvent_UnsubscribeNotifyEvent(g_busHandle, argv[2]);
+}
+
 int handle_cmds (int argc, char *argv[])
 {
     /* Interactive shell; handle the enter key */
@@ -2505,6 +2743,15 @@ int handle_cmds (int argc, char *argv[])
     {
         validate_and_execute_close_session_cmd (argc, argv);
     }
+    else if(matchCmd(command, 3, "notifydml"))
+    {
+        validate_and_execute_notify_cmd (argc, argv, true);
+    }
+    else if(matchCmd(command, 3, "unnotifydml"))
+    {
+        validate_and_execute_notify_cmd (argc, argv, false);
+    }
+    
     else if(matchCmd(command, 4, "help"))
     {
         if(argc == 2)
