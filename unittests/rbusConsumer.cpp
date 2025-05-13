@@ -54,7 +54,7 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
   rbusProperty_t props;
   int actualCount = 0;
   isElementPresent(handle, param);
-  rc = rbus_getExt(handle, 1, param, &actualCount, &props);
+  rc = rbus_getExt(handle, 1, &param, &actualCount, &props);
   EXPECT_EQ(rc, RBUS_ERROR_SUCCESS);
   
   if(RBUS_ERROR_SUCCESS != rc) goto exit;
