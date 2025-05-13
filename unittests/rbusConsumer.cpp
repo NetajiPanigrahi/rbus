@@ -51,14 +51,16 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
   int rc = RBUS_ERROR_BUS_ERROR;
   rbusValue_t val = NULL;
   rbusValueType_t type = RBUS_NONE;
-
+  rbusProperty_t props;
+  int actualCount = 0;
   isElementPresent(handle, param);
-  rc = rbus_get(handle, param, &val);
+  rc = rbus_getExt(handle, 1, param, &actualCount, &props);
   EXPECT_EQ(rc, RBUS_ERROR_SUCCESS);
-
+  
   if(RBUS_ERROR_SUCCESS != rc) goto exit;
-
+  
   rc = RBUS_ERROR_BUS_ERROR;
+  val = rbusProperty_GetValue(props);
   type = rbusValue_GetType(val);
   if( ((0 == strcmp(param,"Device.rbusProvider.Int16")) && (RBUS_INT16 == type) && (GTEST_VAL_INT16 == rbusValue_GetInt16(val))) ||
       ((0 == strcmp(param,"Device.rbusProvider.Int64")) && (RBUS_INT64 == type) && (GTEST_VAL_INT64 == rbusValue_GetInt64(val))) ||
@@ -129,7 +131,7 @@ static int exec_rbus_get_test(rbusHandle_t handle, const char *param)
   }
 
 exit:
-  rbusValue_Release(val);
+  rbusProperty_Release(props);
 
   return rc;
 }
