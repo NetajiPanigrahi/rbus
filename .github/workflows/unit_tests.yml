@@ -72,11 +72,11 @@ jobs:
       - name: Valgrind Checker rbusTestProvider
         uses: Ximaz/valgrind-action@1.2.1
         with:
-             binary_path: nohup ./bin/rbusTestProvider
+             binary_path: nohup ${{github.workspace}}/install/usr/bin/rbusTestProvider
       - name: Valgrind Checker rbusTestConsumer
         uses: Ximaz/valgrind-action@1.2.1
         with:
-             binary_path: ./bin/rbusTestConsumer -a
+             binary_path: ${{github.workspace}}/install/usr/bin/rbusTestConsumer -a
       - name: Run multiRbusOpenMethod Unit Test
         run: |
           cd install/usr
