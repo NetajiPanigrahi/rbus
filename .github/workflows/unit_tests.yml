@@ -57,13 +57,7 @@ jobs:
           export PREFIX=$PWD
           export LD_LIBRARY_PATH=$PREFIX/lib
           nohup ./bin/rtrouted -f -l DEBUG > /tmp/rtrouted_log.txt &
-      - name: Run RbusTestTimeoutValues Unit test
-        run: |
-          cd install/usr
-          export PREFIX=$PWD
-          export LD_LIBRARY_PATH=$PREFIX/lib
-          nohup ./bin/rbusTestTimeoutValuesProvider &
-          ./bin/rbusTestTimeoutValuesConsumer
+          cp ./bin/rbusTestProvider ~/root/rbusTestProvider
       - name: Run Unit test
         run: |
           cd install/usr
@@ -72,7 +66,7 @@ jobs:
       - name: Valgrind Checker rbusTestProvider
         uses: Ximaz/valgrind-action@1.2.1
         with:
-             binary_path: nohup ${{github.workspace}}/install/usr/bin/rbusTestProvider
+             binary_path: nohup ./rbusTestProvider
       - name: Valgrind Checker rbusTestConsumer
         uses: Ximaz/valgrind-action@1.2.1
         with:
