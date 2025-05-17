@@ -25,7 +25,7 @@ jobs:
           cmake-version: '3.16.x'
       - name: Install packages
         run: >
-          sudo apt update && sudo apt install -y libcurl4-openssl-dev libgtest-dev lcov gcovr
+          sudo apt update && sudo apt install -y libcurl4-openssl-dev libgtest-dev lcov gcovr valgrind
       - name: Checkout rbus
         if: steps.cache.outputs.cache-hit != 'true'
         uses: actions/checkout@v3
@@ -57,20 +57,13 @@ jobs:
           export PREFIX=$PWD
           export LD_LIBRARY_PATH=$PREFIX/lib
           nohup ./bin/rtrouted -f -l DEBUG > /tmp/rtrouted_log.txt &
-          cp ./bin/rbusTestProvider ~/root/rbusTestProvider
       - name: Run Unit test
         run: |
           cd install/usr
           export PREFIX=$PWD
           export LD_LIBRARY_PATH=$PREFIX/lib
-      - name: Valgrind Checker rbusTestProvider
-        uses: Ximaz/valgrind-action@1.2.1
-        with:
-             binary_path: nohup ./rbusTestProvider
-      - name: Valgrind Checker rbusTestConsumer
-        uses: Ximaz/valgrind-action@1.2.1
-        with:
-             binary_path: ${{github.workspace}}/install/usr/bin/rbusTestConsumer -a
+          valgrind --leak-check=full --error-exitcode=1 ./bin/rbusTestProvider >/tmp/plog.txt &
+          valgrind --leak-check=full --error-exitcode=1 ./bin/rbusTestConsumer -a
       - name: Run multiRbusOpenMethod Unit Test
         run: |
           cd install/usr
