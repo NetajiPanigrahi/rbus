@@ -62,6 +62,7 @@ jobs:
           cd install/usr
           export PREFIX=$PWD
           export LD_LIBRARY_PATH=$PREFIX/lib
+          echo "Summary of the valgrind failures" >> $GITHUB_STEP_SUMMARY
           valgrind --leak-check=full --error-exitcode=1 ./bin/rbusTestProvider >/tmp/plog.txt &
           valgrind --leak-check=full --error-exitcode=1 ./bin/rbusTestConsumer -a
       - name: Run multiRbusOpenMethod Unit Test
