@@ -33,6 +33,7 @@
 #define _GNU_SOURCE 1 //needed for pthread_mutexattr_settype
 
 #include "rbus_valuechange.h"
+#include "rbus_config.h"
 #include "rbus_handle.h"
 #include <stdlib.h>
 #include <stdio.h>
@@ -56,7 +57,6 @@
 #define VERIFY_NULL(T)      if(NULL == T){ return; }
 #define LOCK() ERROR_CHECK(pthread_mutex_lock(&gVC->mutex))
 #define UNLOCK() ERROR_CHECK(pthread_mutex_unlock(&gVC->mutex))
-
 
 typedef struct ValueChangeDetector_t
 {
@@ -136,7 +136,7 @@ static void* rbusValueChange_pollingThreadFunc(void *userData)
         rtTime_t timeout;
         rtTimespec_t ts;
 
-        rtTime_Later(NULL, RBUS_VALUECHANGE_PERIOD, &timeout);
+        rtTime_Later(NULL, rbusConfig_Get()->valueChangePeriod, &timeout);
         
         err = pthread_cond_timedwait(&gVC->cond, 
                                     &gVC->mutex, 
@@ -200,10 +200,10 @@ static void* rbusValueChange_pollingThreadFunc(void *userData)
                    then we know it was the provider who updated the value we are now detecting.
                 */
                 if(rec->node->changeComp == NULL || 
-                   (rtTime_Elapsed(&rec->node->changeTime, NULL) >= RBUS_VALUECHANGE_PERIOD &&
+                   (rtTime_Elapsed(&rec->node->changeTime, NULL) >= rbusConfig_Get()->valueChangePeriod &&
                    strcmp(rec->handle->componentName, rec->node->changeComp) == 0))
                 {
-                    printf("VC detected provider-side value-change oldcomp=%s elapsed=%d period=%d\n", rec->node->changeComp, rtTime_Elapsed(&rec->node->changeTime, NULL), RBUS_VALUECHANGE_PERIOD);
+                    printf("VC detected provider-side value-change oldcomp=%s elapsed=%d period=%d\n", rec->node->changeComp, rtTime_Elapsed(&rec->node->changeTime, NULL), rbusConfig_Get()->valueChangePeriod);
                     setPropertyChangeComponent((elementNode*)rec->node, rec->handle->componentName);
                 }
 

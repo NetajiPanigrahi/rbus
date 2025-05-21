@@ -34,6 +34,7 @@
 #include "rbus_subscriptions.h"
 #include "rbus_asyncsubscribe.h"
 #include "rbus_intervalsubscription.h"
+#include "rbus_config.h"
 #include "rbus_log.h"
 #include "rbus_handle.h"
 #include "rbus_message.h"
@@ -321,17 +322,6 @@ static rbusEventSubscriptionInternal_t* rbusEventSubscription_find(rtVector even
         }
     }
     return NULL;
-}
-
-rbusError_t rbusHandle_ConfigTimeoutValues(rbusHandle_t handle, rbusTimeoutValues_t timeoutValues)
-{
-    VERIFY_NULL(handle);
-    rbusHandle_ConfigSetTimeout(handle, timeoutValues.setTimeout);
-    rbusHandle_ConfigGetTimeout(handle, timeoutValues.getTimeout);
-    rbusHandle_ConfigSetMultiTimeout(handle, timeoutValues.setMultiTimeout);
-    rbusHandle_ConfigGetMultiTimeout(handle, timeoutValues.getMultiTimeout);
-    rbusHandle_ConfigSubscribeTimeout(handle, timeoutValues.subscribeTimeout);
-    return RBUS_ERROR_SUCCESS;
 }
 
 rbusError_t rbusOpenDirect_SubAdd(rbusHandle_t handle, rtVector eventSubs, char const* eventName)
@@ -2845,11 +2835,13 @@ static void _rbus_open_pre_initialize(bool retain)
     
     if(retain && !sRetained)
     {
+        rbusConfig_CreateOnce();
         rbus_registerMasterEventHandler(_master_event_callback_handler, NULL);
         sRetained = true;
     }
     else if(!retain && sRetained)
     {
+        rbusConfig_Destroy();
         rbusElement_mutex_destroy();
         sRetained = false;
     }
@@ -2933,11 +2925,7 @@ rbusError_t rbus_open(rbusHandle_t* handle, char const* componentName)
         RBUSLOG_ERROR("(%s): rbus_registerObj error %d", componentName, err);
         goto exit_error2;
     }
-    if (rbusHandle_TimeoutValuesInit(tmpHandle) != 0)
-    {
-        RBUSLOG_ERROR("(%s): rbusHandle_TimeoutValuesInit failed", componentName);
-        goto exit_error2;
-    }
+
     tmpHandle->componentName = strdup(componentName);
     tmpHandle->componentId = ++sLastComponentId;
     tmpHandle->m_connection = rbus_getConnection();
@@ -3236,7 +3224,7 @@ rbusError_t rbus_regDataElements(
 
         if(handleInfo->subscriptions == NULL)
         {
-            rbusSubscriptions_create(&handleInfo->subscriptions, handle, handleInfo->componentName, handleInfo->elementRoot, RBUS_TMP_DIRECTORY);
+            rbusSubscriptions_create(&handleInfo->subscriptions, handle, handleInfo->componentName, handleInfo->elementRoot, rbusConfig_Get()->tmpDir);
         }
 
         if((err = rbus_addElement(handleInfo->componentName, name)) != RBUSCORE_SUCCESS)
@@ -3428,7 +3416,7 @@ rbusError_t rbus_get(rbusHandle_t handle, char const* name, rbusValue_t* value)
     if (NULL == myConn)
         myConn = handleInfo->m_connection;
 
-    err = rbus_invokeRemoteMethod2(myConn, name, METHOD_GETPARAMETERVALUES, request, rbusHandle_FetchGetTimeout(handle), &response);
+    err = rbus_invokeRemoteMethod2(myConn, name, METHOD_GETPARAMETERVALUES, request, rbusConfig_ReadGetTimeout(), &response);
 
     if(err != RBUSCORE_SUCCESS)
     {
@@ -3589,7 +3577,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                     rbusMessage_SetString(request, pParamNames[0]);
                     /* Invoke the method */
                     err = rbus_invokeRemoteMethod(destinations[i], METHOD_GETPARAMETERVALUES,
-                            request, rbusHandle_FetchGetMultiTimeout(handle), &response);
+                            request, rbusConfig_ReadWildcardGetTimeout(), &response);
 
                     if(err != RBUSCORE_SUCCESS)
                     {
@@ -3752,7 +3740,7 @@ rbusError_t rbus_getExt(rbusHandle_t handle, int paramCount, char const** pParam
                     RBUSLOG_DEBUG("sending batch request with %d params to component %s", batchCount, componentName);
                     free(componentName);
 
-                    if((err = rbus_invokeRemoteMethod(firstParamName, METHOD_GETPARAMETERVALUES, request, rbusHandle_FetchGetTimeout(handle), &response)) != RBUSCORE_SUCCESS)
+                    if((err = rbus_invokeRemoteMethod(firstParamName, METHOD_GETPARAMETERVALUES, request, rbusConfig_ReadGetTimeout(), &response)) != RBUSCORE_SUCCESS)
                     {
                         RBUSLOG_ERROR("%s for %s failed with RBUS Daemon error: %s", __FUNCTION__, firstParamName, rbusCoreErrorToString(err));
                         errorcode = rbusCoreError_to_rbusError(err);
@@ -3906,7 +3894,7 @@ rbusError_t rbus_set(rbusHandle_t handle, char const* name,rbusValue_t value, rb
     if (NULL == myConn)
         myConn = handleInfo->m_connection;
 
-    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_SETPARAMETERVALUES, setRequest, rbusHandle_FetchSetTimeout(handle), &setResponse)) != RBUSCORE_SUCCESS)
+    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_SETPARAMETERVALUES, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
     {
         RBUSLOG_ERROR("%s for %s failed with RBUS Daemon error: %s", __FUNCTION__, name, rbusCoreErrorToString(err));
         errorcode = rbusCoreError_to_rbusError(err);
@@ -3961,7 +3949,6 @@ rbusError_t rbus_setCommit(rbusHandle_t handle, char const* name, rbusSetOptions
     else
         rbusMessage_SetInt32(setRequest, 0);
 
-
     /* Set the Component name that invokes the set */
     rbusMessage_SetString(setRequest, handleInfo->componentName);
     /* Set the Size of params */
@@ -3974,7 +3961,7 @@ rbusError_t rbus_setCommit(rbusHandle_t handle, char const* name, rbusSetOptions
     rtConnection myConn = rbuscore_FindClientPrivateConnection(name);
     if (NULL == myConn)
         myConn = handleInfo->m_connection;
-    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_COMMIT, setRequest, rbusHandle_FetchSetTimeout(handle),  &setResponse)) != RBUSCORE_SUCCESS)
+    if((err = rbus_invokeRemoteMethod2(myConn, name, METHOD_COMMIT, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
     {
         RBUSLOG_ERROR("%s for %s failed with RBUS Daemon error: %s", __FUNCTION__, name, rbusCoreErrorToString(err));
         errorcode = rbusCoreError_to_rbusError(err);
@@ -4145,7 +4132,7 @@ rbusError_t rbus_setMulti(rbusHandle_t handle, int numProps, rbusProperty_t prop
                     /* Set the Commit value; FIXME: Should we use string? */
                     rbusMessage_SetString(setRequest, (!opts || opts->commit) ? "TRUE" : "FALSE");
 
-                    if((err = rbus_invokeRemoteMethod(firstParamName, METHOD_SETPARAMETERVALUES, setRequest, rbusHandle_FetchSetMultiTimeout(handle), &setResponse)) != RBUSCORE_SUCCESS)
+                    if((err = rbus_invokeRemoteMethod(firstParamName, METHOD_SETPARAMETERVALUES, setRequest, rbusConfig_ReadSetTimeout(), &setResponse)) != RBUSCORE_SUCCESS)
                     {
                         RBUSLOG_ERROR("%s for %s failed with RBUS Daemon error: %s", __FUNCTION__, firstParamName, rbusCoreErrorToString(err));
                         errorcode = rbusCoreError_to_rbusError(err);
@@ -4312,7 +4299,7 @@ rbusError_t rbusTable_addRow(
                      because the broker simlpy looks at the top level nodes that are owned by a component route.  maybe this breaks if the broker changes*/
         METHOD_ADDTBLROW, 
         request, 
-        rbusHandle_FetchSetTimeout(handle),
+        rbusConfig_ReadSetTimeout(),
         &response)) != RBUSCORE_SUCCESS)
     {
         RBUSLOG_ERROR("%s for %s failed with RBUS Daemon error: %s", __FUNCTION__, tableName, rbusCoreErrorToString(err));
@@ -4378,7 +4365,7 @@ rbusError_t rbusTable_removeRow(
         rowName,
         METHOD_DELETETBLROW, 
         request, 
-        rbusHandle_FetchSetTimeout(handle),
+        rbusConfig_ReadSetTimeout(),
         &response)) != RBUSCORE_SUCCESS)
     {
         RBUSLOG_ERROR(" %s for %s failed with RBUS Daemon error: %s", __FUNCTION__, rowName, rbusCoreErrorToString(err));
@@ -4506,7 +4493,7 @@ rbusError_t rbusTable_getRowNames(
     if (NULL == myConn)
         myConn = handleInfo->m_connection;
 
-    if((err = rbus_invokeRemoteMethod2(myConn, tableName, METHOD_GETPARAMETERNAMES, request, rbusHandle_FetchGetTimeout(handle), &response)) == RBUSCORE_SUCCESS)
+    if((err = rbus_invokeRemoteMethod2(myConn, tableName, METHOD_GETPARAMETERNAMES, request, rbusConfig_ReadGetTimeout(), &response)) == RBUSCORE_SUCCESS)
     {
         rbusLegacyReturn_t legacyRetCode = RBUS_LEGACY_ERR_FAILURE;
         int ret = -1;
@@ -4646,7 +4633,7 @@ rbusError_t rbusElementInfo_get(
         rbusMessage_SetInt32(request, depth);/*depth*/
         rbusMessage_SetInt32(request, 0);/*not row names*/
 
-        if((err = rbus_invokeRemoteMethod(destinations[d], METHOD_GETPARAMETERNAMES, request, rbusHandle_FetchGetTimeout(handle), &response)) != RBUSCORE_SUCCESS)
+        if((err = rbus_invokeRemoteMethod(destinations[d], METHOD_GETPARAMETERNAMES, request, rbusConfig_ReadGetTimeout(), &response)) != RBUSCORE_SUCCESS)
         {
             RBUSLOG_ERROR("invokeRemoteMethod %s destination=%s object=%s failed: err=%d", METHOD_GETPARAMETERNAMES, destinations[d], elemName, err);
             errorcode = rbusCoreError_to_rbusError(err);
@@ -4877,7 +4864,7 @@ static rbusError_t rbusEvent_SubscribeWithRetries(
 
     if(timeout == -1)
     {
-        destNotFoundTimeout = rbusHandle_FetchSubscribeTimeout(handle);
+        destNotFoundTimeout = rbusConfig_Get()->subscribeTimeout;
     }
     else
     {
@@ -4933,8 +4920,8 @@ static rbusError_t rbusEvent_SubscribeWithRetries(
             destNotFoundSleep *= 2;
 
             //cap it so the wait time still allows frequent retries
-            if(destNotFoundSleep > RBUS_SUBSCRIBE_MAXWAIT)
-                destNotFoundSleep = RBUS_SUBSCRIBE_MAXWAIT;
+            if(destNotFoundSleep > rbusConfig_Get()->subscribeMaxWait)
+                destNotFoundSleep = rbusConfig_Get()->subscribeMaxWait;
         }
         else
         {
@@ -5938,7 +5925,7 @@ rbusError_t rbusMethod_Invoke(
     if (handleInfo->m_handleType != RBUS_HWDL_TYPE_REGULAR)
         return RBUS_ERROR_INVALID_HANDLE;
 
-    return rbusMethod_InvokeInternal(handle, methodName, inParams, outParams, rbusHandle_FetchSetTimeout(handle));
+    return rbusMethod_InvokeInternal(handle, methodName, inParams, outParams, rbusConfig_ReadSetTimeout());
 }
 
 typedef struct _rbusMethodInvokeAsyncData_t
@@ -6001,7 +5988,7 @@ rbusError_t rbusMethod_InvokeAsync(
     data->methodName = strdup(methodName);
     data->inParams = inParams;
     data->callback = callback;
-    data->timeout = timeout > 0 ? (timeout * 1000) : (int)rbusHandle_FetchSetTimeout(handle); /* convert seconds to milliseconds */
+    data->timeout = timeout > 0 ? (timeout * 1000) : rbusConfig_ReadSetTimeout(); /* convert seconds to milliseconds */
 
     if((err = pthread_create(&pid, NULL, rbusMethod_InvokeAsyncThreadFunc, data)) != 0)
     {
