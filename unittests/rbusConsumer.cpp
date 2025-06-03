@@ -1004,7 +1004,7 @@ int rbusConsumer(rbusGtest_t test, pid_t pid, int runtime)
         rbusValue_Release(value);
 
         asyncCalled = false;
-        rc = rbusMethod_InvokeAsync(handle, "Device.rbusProvider.MethodAsync1()", inParams, asyncMethodHandler, 0);
+        rc = rbusMethod_InvokeAsync(handle, "Device.rbusProvider.MethodAsync1()", inParams, asyncMethodHandler, 0, NULL);
         printf("consumer: rbusMethod_InvokeAsync(%s) %s\n", "Device.rbusProvider.MethodAsync1()",
             rc == RBUS_ERROR_SUCCESS ? "success" : "fail");
         sleep(runtime);
@@ -1025,7 +1025,7 @@ int rbusConsumer(rbusGtest_t test, pid_t pid, int runtime)
          rbusValue_Release(value);
 
          asyncCalled = false;
-         rc = rbusMethod_InvokeAsync(handle, "Device.rbusProvider.MethodAsync_2()", inParams, asyncMethodHandler1, 0);
+         rc = rbusMethod_InvokeAsync(handle, "Device.rbusProvider.MethodAsync_2()", inParams, asyncMethodHandler1, 0, NULL);
          printf("consumer: rbusMethod_InvokeAsync(%s) %s\n", "Device.rbusProvider.MethodAsync_2()",
          rc == RBUS_ERROR_SUCCESS ? "success" : "fail");
          sleep(runtime);

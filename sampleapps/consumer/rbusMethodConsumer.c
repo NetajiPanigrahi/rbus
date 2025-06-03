@@ -121,7 +121,7 @@ int main(int argc, char *argv[])
     rbusObject_SetValue(inParams, "status", value);
     rbusValue_Release(value);
 
-    rc = rbusMethod_InvokeAsync(handle, "Device.Methods.AsyncMethod()", inParams, asyncMethodHandler, 0);
+    rc = rbusMethod_InvokeAsync(handle, "Device.Methods.AsyncMethod()", inParams, asyncMethodHandler, 0, NULL);
 
 
     rbusObject_Release(inParams);

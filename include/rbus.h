@@ -1842,7 +1842,8 @@ rbusError_t rbusMethod_InvokeAsync(
     char const* methodName, 
     rbusObject_t inParams, 
     rbusMethodAsyncRespHandler_t callback, 
-    int timeout);
+    int timeout,
+    uint32_t* transactionID);
 
 /** @} */
 
