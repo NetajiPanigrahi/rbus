@@ -67,9 +67,10 @@ int main(int argc, char *argv[])
 
     int rc = RBUS_ERROR_SUCCESS;
     rbusHandle_t handle;
-    rbusFilter_t filter;
-    rbusValue_t filterValue;
-    rbusEventSubscription_t subscription = {"Device.Provider1.Param1", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false};
+    rbusEventSubscription_t subscription[4] = {{"Device.Hosts.X_RDKCENTRAL-COM_PresenceLeaveIPv4CheckInterval", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false},
+                                               {"Device.X_RDKCENTRAL-COM_Report.NetworkDevicesStatus.Enabled", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false},
+                                               {"Device.DeviceInfo.RollbackTesting.IntParam", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false},
+                                               {"Device.DeviceInfo.RollbackTesting.BoolParam", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false}};
 
     rc = rbus_open(&handle, "EventConsumer");
     if(rc != RBUS_ERROR_SUCCESS)
@@ -78,42 +79,8 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    printf("Subscribing to Device.Provider1.Param1\n");
-    /* subscribe to all value change events on property "Device.Provider1.Param1" */
-    rc = rbusEvent_Subscribe(
-        handle,
-        "Device.Provider1.Param1",
-        eventReceiveHandler,
-        "My User Data",
-        0);
-
-    sleep(15);
-
-    printf("Unsubscribing Device.Provider1.Param1\n");
-
-    rbusEvent_Unsubscribe(
-        handle,
-        "Device.Provider1.Param1");
-
-    /* subscribe using filter to value change events on property "Device.Provider1.Param1"
-       setting filter to: value >= 5.
-     */
-
-    rbusValue_Init(&filterValue);
-    rbusValue_SetInt32(filterValue, 5);
-
-    rbusFilter_InitRelation(&filter, RBUS_FILTER_OPERATOR_GREATER_THAN, filterValue);
-
-    subscription.filter = filter;
-
-    printf("Subscribing to Device.Provider1.Param1 with filter > 5\n");
-
-    rc = rbusEvent_SubscribeEx(handle, &subscription, 1, 0);
-
-    rbusValue_Release(filterValue);
-    rbusFilter_Release(filter);
-
-    sleep(25);
+    rc = rbusEvent_SubscribeEx(handle, &subscription, 4, 0);
+    sleep(250000);
 
     rbus_close(handle);
     return rc;
