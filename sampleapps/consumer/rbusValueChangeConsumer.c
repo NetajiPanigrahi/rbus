@@ -79,7 +79,7 @@ int main(int argc, char *argv[])
         return -1;
     }
 
-    rc = rbusEvent_SubscribeEx(handle, &subscription, 4, 0);
+    rc = rbusEvent_SubscribeEx(handle, subscription, 4, 0);
     sleep(250000);
 
     rbus_close(handle);
