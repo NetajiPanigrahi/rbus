@@ -80,7 +80,7 @@ add_dependencies(multiRbusOpenEventConsumer rbus)
 target_link_libraries(multiRbusOpenEventConsumer rbus)
 
 add_executable(rbus_test_subscribe
-	multiRbusOpenEventConsumer/rbus_test_subscribe.c)
+	consumer/rbus_test_subscribe.c)
 add_dependencies(rbus_test_subscribe rbus)
 target_link_libraries(rbus_test_subscribe rbus)
 
