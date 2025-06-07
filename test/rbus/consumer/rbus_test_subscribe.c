@@ -1,0 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <pthread.h>
+#include <sys/time.h>
+#include <time.h>
+#include <unistd.h>
+#include <string.h>
+#include <getopt.h>
+#include <rbus.h>
+
+int runtime = 60;
+
+static void eventReceiveHandler(
+    rbusHandle_t handle,
+    rbusEvent_t const* event,
+    rbusEventSubscription_t* subscription)
+{
+    (void)handle;
+
+    rbusValue_t newValue = rbusObject_GetValue(event->data, "value");
+    rbusValue_t oldValue = rbusObject_GetValue(event->data, "oldValue");
+    rbusValue_t byValue = rbusObject_GetValue(event->data, "by");
+    rbusValue_t filter = rbusObject_GetValue(event->data, "filter");
+
+    printf("Consumer receiver ValueChange event for param %s\n", event->name);
+
+    if(newValue)
+        printf("   New Value: %d\n", rbusValue_GetInt32(newValue));
+
+    if(oldValue)
+        printf("   Old Value: %d\n", rbusValue_GetInt32(oldValue));
+
+    if(byValue)
+        printf("   By component: %s\n", rbusValue_GetString(byValue, NULL));
+
+    if(filter)
+        printf("   Filter: %d\n", rbusValue_GetBoolean(filter));
+
+    if(subscription->userData)
+        printf("   User data: %s\n", (char*)subscription->userData);
+}
+
+int main(int argc, char *argv[])
+{
+    (void)(argc);
+    (void)(argv);
+
+    int rc = RBUS_ERROR_SUCCESS;
+    rbusHandle_t handle;
+    rbusEventSubscription_t subscription[4] = {{"Device.Hosts.X_RDKCENTRAL-COM_PresenceLeaveIPv4CheckInterval", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false},
+                                               {"Device.X_RDKCENTRAL-COM_Report.NetworkDevicesStatus.Enabled", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false},
+                                               {"Device.DeviceInfo.RollbackTesting.IntParam", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false},
+                                               {"Device.DeviceInfo.RollbackTesting.BoolParam", NULL, 0, 0, eventReceiveHandler, NULL, NULL, NULL, false}};
+
+    rc = rbus_open(&handle, "EventConsumer");
+    if(rc != RBUS_ERROR_SUCCESS)
+    {
+        printf("consumer: rbus_open failed: %d\n", rc);
+        return -1;
+    }
+
+    rc = rbusEvent_SubscribeEx(handle, subscription, 4, 0);
+    sleep(250000);
+
+    rbus_close(handle);
+    return rc;
+}
