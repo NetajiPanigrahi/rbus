@@ -79,6 +79,11 @@ add_executable(multiRbusOpenEventConsumer
 add_dependencies(multiRbusOpenEventConsumer rbus)
 target_link_libraries(multiRbusOpenEventConsumer rbus)
 
+add_executable(rbus_test_subscribe
+	multiRbusOpenEventConsumer/rbus_test_subscribe.c)
+add_dependencies(rbus_test_subscribe rbus)
+target_link_libraries(rbus_test_subscribe rbus)
+
 add_executable(rbusTestConsumer
     consumer/rbusTestConsumer.c
     consumer/elementTree.c
@@ -155,7 +160,7 @@ install (TARGETS
  multiRbusOpenRbusGetProvider multiRbusOpenRbusGetConsumer multiRbusOpenRbusSetConsumer
  multiProviderThreadsForSingleEvent multiConsumerThreadsForSingleEvent
  rbusOpenRegRbusOpenProvider rbusOpenSubRbusOpenConsumer
- rbusTestProvider rbusTestConsumer
+ rbusTestProvider rbusTestConsumer rbus_test_subscribe
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES rbus_test.sh
