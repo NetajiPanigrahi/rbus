@@ -22,6 +22,7 @@
 #include <rtMemory.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include "rbus_log.h"
 static rtVector gHandleList = NULL;
 
 #define VERIFY_NULL(T,R) if(NULL == T){ RBUSLOG_ERROR(#T" is NULL"); R; }
