@@ -6567,7 +6567,7 @@ rbusError_t rbus_getPropertyChangeComponent(
     if (!node)
         return RBUS_ERROR_ELEMENT_DOES_NOT_EXIST;
 
-    if (node->type == RBUS_ELEMENT_TYPE_PROPERTY) && ((node->changeComp && node->changeComp[0] != '\0'))
+    if ((node->type == RBUS_ELEMENT_TYPE_PROPERTY) && (node->changeComp && node->changeComp[0] != '\0'))
     {
         if (componentName)
         {
