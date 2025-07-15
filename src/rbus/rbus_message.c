@@ -22,6 +22,7 @@
 #include "rbuscore.h"
 #include <rtMemory.h>
 #include <string.h>
+#include "rbus_log.h"
 
 #define VERIFY_NULL(T) if(NULL == T){ return RBUS_ERROR_INVALID_INPUT; }
 
