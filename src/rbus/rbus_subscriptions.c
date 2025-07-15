@@ -27,6 +27,7 @@
 #include <sys/types.h> 
 #include <signal.h>
 #include <unistd.h>
+#include "rbus_log.h"
 
 #define VERIFY_NULL(T)         if(NULL == T){ return; }
 #define CACHE_FILE_PATH_FORMAT "%s/rbus_subs_%s"
