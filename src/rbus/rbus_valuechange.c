@@ -44,6 +44,7 @@
 #include <rtVector.h>
 #include <rtTime.h>
 #include <rtMemory.h>
+#include "rbus_log.h"
 
 #define ERROR_CHECK(CMD) \
 { \
