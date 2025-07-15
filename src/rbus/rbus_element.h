@@ -26,7 +26,7 @@
 #include <rtVector.h>
 #include <rtTime.h>
 #include <pthread.h>
-
+#include "rbus_log.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
