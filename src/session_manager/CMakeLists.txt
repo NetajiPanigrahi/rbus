@@ -31,7 +31,15 @@ add_dependencies(rbus_session_mgr_client rbus rbuscore)
 target_link_libraries(rbus_session_mgr_client rbus rbuscore)
 endif (BUILD_SESSIONMGR_SAMPLE_APPS)
 
+add_executable(rbus_sub_wifi_dmls sub_wifi_dmls.c)
+add_dependencies(rbus_sub_wifi_dmls rbus rbuscore)
+target_link_libraries(rbus_sub_wifi_dmls rbus rbuscore)
+
+
 install (TARGETS rbus_session_mgr
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+
+install (TARGETS rbus_sub_wifi_dmls
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 install(FILES rbus_session_mgr.h DESTINATION "include/rbus")
