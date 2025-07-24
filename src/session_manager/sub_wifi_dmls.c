@@ -68,6 +68,9 @@ static void valueChangeHandler(
 
     (void)handle;
 }
+
+#if 0
+
 #define Security_ModeEnabled 		"Device.WiFi.AccessPoint.*.Security.ModeEnabled"
 #define KeyPassphrase 			"Device.WiFi.AccessPoint.*.Security.X_COMCAST-COM_KeyPassphrase"
 #define RadiusServerIPAddr 		"Device.WiFi.AccessPoint.*.Security.RadiusServerIPAddr"
@@ -116,7 +119,7 @@ static void valueChangeHandler(
 #define NAT_IPv6Host           "Device.NAT.X_CISCO_COM_DMZ.IPv6Host"
 #define NAT_PortMapping        "Device.NAT.X_Comcast_com_EnablePortMapping"
 
-
+#endif
 
 int main(int argc, char *argv[])
 {
@@ -125,7 +128,7 @@ int main(int argc, char *argv[])
 
     int rc = RBUS_ERROR_SUCCESS;
     rbusHandle_t handle;
-
+#if 0
     rbusEventSubscription_t subscriptions[] = {
                 {Security_ModeEnabled, NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
                 {KeyPassphrase, NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
@@ -171,7 +174,139 @@ int main(int argc, char *argv[])
 		{"Device.DeviceInfo.", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
 		{"Device.MoCA.Interface.1.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false}	
     };
-
+#endif
+    rbusEventSubscription_t subscriptions[] = {
+	{"Device.NotifyComponent.X_RDKCENTRAL-COM_Connected-Client", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.Bridging.Bridge.1.Port.8.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.Bridging.Bridge.2.Port.2.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_COMCAST_COM_xfinitywifiEnable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.1.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.1.Security.X_COMCAST-COM_KeyPassphrase", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.1.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.1.X_CISCO_COM_MACFilter.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.1.X_CISCO_COM_MACFilter.FilterAsBlackList", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.2.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.2.Security.X_COMCAST-COM_KeyPassphrase", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.2.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.2.X_CISCO_COM_MACFilter.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.2.X_CISCO_COM_MACFilter.FilterAsBlackList", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.3.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.3.Security.X_COMCAST-COM_KeyPassphrase", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.3.Security.KeyPassphrase", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.3.Security.PreSharedKey", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.4.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.4.Security.X_COMCAST-COM_KeyPassphrase", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.4.Security.KeyPassphrase", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.4.Security.PreSharedKey", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.1.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.2.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.1.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.1.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.2.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.2.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.3.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.3.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.4.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.4.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanMode", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterAnonymousInternetRequests", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterHTTP", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterIdent", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterMulticast", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterP2P", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FirewallLevel", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterAnonymousInternetRequestsV6", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterHTTPV6", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterIdentV6", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterMulticastV6", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FilterP2PV6", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_Security.Firewall.FirewallLevelV6", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanIPAddress", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_CISCO_COM_DeviceControl.LanManagementEntry.1.LanSubnetMask", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DHCPv4.Server.Pool.1.MinAddress", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DHCPv4.Server.Pool.1.MaxAddress", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DHCPv4.Server.Pool.1.LeaseTime", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.NAT.X_CISCO_COM_DMZ.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.NAT.X_CISCO_COM_DMZ.InternalIP", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.NAT.X_CISCO_COM_DMZ.IPv6Host", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.NAT.X_Comcast_com_EnablePortMapping", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_xOpsDeviceMgmt.Mesh.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_DeviceFingerPrint.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_RFC.Feature.PrivacyProtection.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_PrivacyProtection.Activate", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_CloudUIEnable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_AkerEnable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.MoCA.Interface.1.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.NotifyComponent.X_RDKCENTRAL-COM_PresenceNotification", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.X_CISCO_COM_FactoryResetRadioAndAp", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.5.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.6.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.9.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.10.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.5.Status", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.6.Status", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.9.Status", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.10.Status", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.5.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.6.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.9.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.10.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.5.Security.RadiusServerIPAddr", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.6.Security.RadiusServerIPAddr", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.9.Security.RadiusServerIPAddr", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.10.Security.RadiusServerIPAddr", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.5.BSSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.6.BSSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.9.BSSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.10.BSSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.5.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.6.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.9.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.10.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_COMCAST-COM_GRE.Tunnel.1.PrimaryRemoteEndpoint", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_COMCAST-COM_GRE.Tunnel.1.SecondaryRemoteEndpoint", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.1.Channel", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.2.Channel", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.1.OperatingFrequencyBand", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.2.OperatingFrequencyBand", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.1.OperatingChannelBandwidth", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.2.OperatingChannelBandwidth", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.1.VLANID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.1.LocalInterfaces",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.2.VLANID",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.X_COMCAST-COM_GRE.Tunnel.1.Interface.2.LocalInterfaces",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.17.Security.ModeEnabled",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.17.Security.X_COMCAST-COM_KeyPassphrase",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.17.SSIDAdvertisementEnabled",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.17.X_CISCO_COM_MACFilter.Enable",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.17.X_CISCO_COM_MACFilter.FilterAsBlackList",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.18.Security.ModeEnabled",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.18.Security.X_COMCAST-COM_KeyPassphrase",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.18.Security.KeyPassphrase",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.18.Security.PreSharedKey",NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.3.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.17.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.17.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.18.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.18.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.19.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.21.SSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.21.Status", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.19.Status", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.19.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.21.SSIDAdvertisementEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.19.Security.RadiusServerIPAddr", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.21.Security.RadiusServerIPAddr", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.19.BSSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.SSID.21.BSSID", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.19.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.AccessPoint.21.Security.ModeEnabled", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.3.Channel", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.3.OperatingFrequencyBand", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.WiFi.Radio.3.OperatingChannelBandwidth", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_AdvancedSecurity.SafeBrowsing.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false},
+{"Device.DeviceInfo.X_RDKCENTRAL-COM_AdvancedSecurity.Softflowd.Enable", NULL, 0, 0, valueChangeHandler, NULL, NULL, NULL, false}
+};
     printf("constumer: start\n");
 
     rc = rbus_open(&handle, "Subscription_Consumer");
@@ -181,7 +316,8 @@ int main(int argc, char *argv[])
         goto exit4;
     }
     
-    rc = rbusEvent_SubscribeEx(handle, subscriptions, 43, 0);
+    //rc = rbusEvent_SubscribeEx(handle, subscriptions, 43, 0);
+    rc = rbusEvent_SubscribeEx(handle, subscriptions, 130, 0);
 
     if(rc != RBUS_ERROR_SUCCESS)
     {
@@ -197,7 +333,7 @@ int main(int argc, char *argv[])
         sleep(20);
     }
 
-    rbusEvent_UnsubscribeEx(handle, subscriptions, 43);
+    rbusEvent_UnsubscribeEx(handle, subscriptions, 130);
 
 exit3:
     rbus_close(handle);
