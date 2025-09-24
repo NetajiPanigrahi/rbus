@@ -898,7 +898,10 @@ void event_receive_handler2(rbusHandle_t handle, rbusEvent_t const* event, rbusE
 
         printf("Event received %s of type %s\r\n", event->name, stype);
         printf("Event data:\r\n");
-        rbusObject_fwrite(event->data, 2, stdout); 
+		if (event->type == RBUS_EVENT_VALUE_CHANGED)
+            rbusObject_fwrite(event->data, 3, stdout);
+		else
+			rbusObject_fwrite(event->data, 2, stdout);
         printf("\r\n");
         if (subscription->userData)
             printf("User data: %s\r\n", (const char*)subscription->userData);
