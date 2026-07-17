@@ -6333,11 +6333,21 @@ static int rbusMethod_isDebugMethod(char const* methodName)
     if(!methodName)
         return 0;
     return (strstr(methodName, "Device.SoftwareModules") != NULL ||
-            strstr(methodName, "SetRequestedState")      != NULL ||
             strstr(methodName, "InstallDU")              != NULL ||
-            strstr(methodName, "Uninstall")              != NULL ||
             strstr(methodName, "SetRunLevel")            != NULL ||
             strstr(methodName, "Update")                 != NULL);
+}
+
+static int rbusMethod_shouldDumpOutParams(char const* methodName)
+{
+    if(!methodName)
+        return 0;
+    return (strstr(methodName, "Device.SoftwareModules") != NULL ||
+            strstr(methodName, "InstallDU")              != NULL ||
+            strstr(methodName, "SetRunLevel")            != NULL ||
+            strstr(methodName, "Update")                 != NULL ||
+            strstr(methodName, "SetRequestedState")      != NULL ||
+            strstr(methodName, "Uninstall")              != NULL);
 }
 
 rbusError_t rbusMethod_InvokeInternal(
@@ -6417,6 +6427,18 @@ rbusError_t rbusMethod_InvokeInternal(
     else
     {
         rbusObject_initFromMessage(outParams, response);
+    }
+
+    /* Print the fully-decoded outParams object (full tree dump) */
+    if(rbusMethod_shouldDumpOutParams(methodName) && *outParams)
+    {
+        FILE* fp = fopen(RBUS_DBG_LOG_FILE, "a");
+        if(fp)
+        {
+            fprintf(fp, "[DBG] outParams dump for method '%s':\n", methodName);
+            rbusObject_fwrite(*outParams, 1, fp);
+            fclose(fp);
+        }
     }
 
     if(legacyRetCode > RBUS_LEGACY_ERR_SUCCESS)
